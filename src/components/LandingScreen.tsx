@@ -8,13 +8,13 @@ interface LandingScreenProps {
  */
 export default function LandingScreen({ onStart }: LandingScreenProps) {
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-ink text-white">
+    <div className="no-scrollbar relative h-full overflow-y-auto overflow-x-hidden bg-ink text-white">
       {/* Ambient colour blobs */}
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-violet-500/40 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -right-20 h-72 w-72 rounded-full bg-fuchsia-500/40 blur-3xl" />
       <div className="pointer-events-none absolute right-10 top-32 h-40 w-40 rounded-full bg-sky-400/30 blur-3xl" />
 
-      <div className="animate-fade-up relative flex flex-1 flex-col px-7 pb-9 pt-20">
+      <div className="animate-fade-up relative flex min-h-full flex-col px-7 pb-9 pt-20">
         {/* Logo mark */}
         <div className="flex items-center gap-2.5">
           <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-2xl backdrop-blur">
