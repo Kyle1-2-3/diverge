@@ -1,0 +1,76 @@
+/* Two clean fonts from Google Fonts (must come before other rules). */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+/* Tailwind v4 — single import pulls in base, components and utilities. */
+@import 'tailwindcss';
+
+/* ---- Design tokens / theme -------------------------------------------------
+   Tailwind v4 reads custom theme values from the @theme block, which makes
+   utilities like `bg-brand` or `font-display` available throughout the app. */
+@theme {
+  --color-brand: #6d5efc;
+  --color-brand-soft: #eef0ff;
+  --color-ink: #1a1a2e;
+  --color-muted: #6b6b7b;
+
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  /* A soft ambient backdrop so the phone mockup feels like it's floating. */
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #e8e6ff 0%, transparent 60%),
+    radial-gradient(1000px 500px at 110% 10%, #ffe9f3 0%, transparent 55%),
+    #f4f4fb;
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbars inside the phone for a cleaner mobile-app feel,
+   while still allowing scroll. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Reusable entrance animation for feed cards & screen transitions. */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-pop-in {
+  animation: popIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
