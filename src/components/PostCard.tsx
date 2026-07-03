@@ -1,8 +1,11 @@
 import { useRef, useState } from 'react'
 import type { Post } from '../types'
 import { categoryMeta } from '../data/categories'
+import { useInteractions } from '../state/interactions'
+import { compact } from '../lib/format'
 import SmartImage from './SmartImage'
 import Avatar from './Avatar'
+import CommentsSheet from './CommentsSheet'
 import {
   Heart,
   HeartFilled,
@@ -18,25 +21,37 @@ interface PostCardProps {
   post: Post
 }
 
-function compact(n: number): string {
-  return n >= 1000 ? `${(n / 1000).toFixed(1).replace('.0', '')}k` : String(n)
-}
-
 /**
  * An immersive, Instagram-style post. The "diverge" mechanic (why am I seeing
  * this) is hidden inside the "..." menu — discoverable, never preachy.
+ * Likes / saves / comments live in the shared interactions store, so they
+ * survive tab switches and page refreshes.
  */
 export default function PostCard({ post }: PostCardProps) {
-  const [liked, setLiked] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const {
+    liked,
+    saved,
+    comments,
+    like,
+    toggleLike,
+    toggleSave,
+    hidePost,
+    unhidePost,
+    showToast,
+  } = useInteractions()
   const [menuOpen, setMenuOpen] = useState(false)
   const [showWhy, setShowWhy] = useState(false)
+  const [showComments, setShowComments] = useState(false)
   const [burst, setBurst] = useState(false) // double-tap heart animation
   const lastTap = useRef(0)
   const meta = categoryMeta[post.category]
 
-  const like = () => {
-    setLiked(true)
+  const isLiked = liked.has(post.id)
+  const isSaved = saved.has(post.id)
+  const commentCount = post.comments + (comments[post.id]?.length ?? 0)
+
+  const likeWithBurst = () => {
+    like(post.id)
     setBurst(true)
     window.setTimeout(() => setBurst(false), 700)
   }
@@ -44,8 +59,18 @@ export default function PostCard({ post }: PostCardProps) {
   // Double-tap the photo to like, like the real thing.
   const onPhotoTap = () => {
     const now = Date.now()
-    if (now - lastTap.current < 300) like()
+    if (now - lastTap.current < 300) likeWithBurst()
     lastTap.current = now
+  }
+
+  const notInterested = () => {
+    setMenuOpen(false)
+    hidePost(post.id)
+    showToast({
+      message: 'Post hidden',
+      actionLabel: 'Undo',
+      onAction: () => unhidePost(post.id),
+    })
   }
 
   return (
@@ -96,7 +121,7 @@ export default function PostCard({ post }: PostCardProps) {
             ? Why am I seeing this?
           </button>
           <button
-            onClick={() => setMenuOpen(false)}
+            onClick={notInterested}
             className="flex w-full items-center gap-2 border-t-2 border-black px-4 py-3 text-left text-sm text-muted hover:bg-gray-50"
           >
             Not interested
@@ -111,8 +136,6 @@ export default function PostCard({ post }: PostCardProps) {
       >
         <SmartImage
           src={post.image}
-          gradient={post.gradient}
-          emoji={post.visual}
           alt={post.caption}
           className="h-full w-full"
         />
@@ -131,28 +154,38 @@ export default function PostCard({ post }: PostCardProps) {
       {/* Actions */}
       <div className="flex items-center gap-4 px-3.5 pt-3 text-black">
         <button
-          onClick={() => (liked ? setLiked(false) : like())}
+          onClick={() => (isLiked ? toggleLike(post.id) : likeWithBurst())}
           className="transition-transform active:scale-75"
           aria-label="Like"
         >
-          {liked ? (
+          {isLiked ? (
             <HeartFilled className="h-7 w-7 text-black" />
           ) : (
             <Heart className="h-7 w-7" />
           )}
         </button>
-        <button className="transition-transform active:scale-75" aria-label="Comment">
+        <button
+          onClick={() => setShowComments(true)}
+          className="transition-transform active:scale-75"
+          aria-label="Comment"
+        >
           <Comment className="h-7 w-7" />
         </button>
-        <button className="transition-transform active:scale-75" aria-label="Share">
+        <button
+          onClick={() =>
+            showToast({ message: `Link to @${post.handle}'s post copied` })
+          }
+          className="transition-transform active:scale-75"
+          aria-label="Share"
+        >
           <Share className="h-6 w-6" />
         </button>
         <button
-          onClick={() => setSaved((v) => !v)}
+          onClick={() => toggleSave(post.id)}
           className="ml-auto transition-transform active:scale-75"
           aria-label="Save"
         >
-          {saved ? (
+          {isSaved ? (
             <BookmarkFilled className="h-7 w-7" />
           ) : (
             <Bookmark className="h-7 w-7" />
@@ -163,13 +196,16 @@ export default function PostCard({ post }: PostCardProps) {
       {/* Likes + caption + comments */}
       <div className="px-3.5 pb-4 pt-2">
         <p className="font-display text-sm font-bold text-black">
-          {compact(post.likes + (liked ? 1 : 0))} likes
+          {compact(post.likes + (isLiked ? 1 : 0))} likes
         </p>
         <p className="mt-1 text-sm leading-snug text-black">
           <span className="font-bold">{post.handle}</span> {post.caption}
         </p>
-        <button className="mt-1.5 text-sm text-muted">
-          View all {post.comments} comments
+        <button
+          onClick={() => setShowComments(true)}
+          className="mt-1.5 text-sm text-muted"
+        >
+          View all {compact(commentCount)} comments
         </button>
         <p className="mt-1 font-display text-[11px] uppercase tracking-wide text-muted">
           {post.timeAgo} ago
@@ -179,6 +215,11 @@ export default function PostCard({ post }: PostCardProps) {
       {/* Why-am-I-seeing-this sheet */}
       {showWhy && (
         <WhySheet reason={post.whyReason} onClose={() => setShowWhy(false)} />
+      )}
+
+      {/* Comments sheet */}
+      {showComments && (
+        <CommentsSheet post={post} onClose={() => setShowComments(false)} />
       )}
     </article>
   )

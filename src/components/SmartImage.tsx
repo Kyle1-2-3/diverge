@@ -2,10 +2,6 @@ import { useState } from 'react'
 
 interface SmartImageProps {
   src: string
-  /** Kept for API compatibility; no longer used (fallback is flat). */
-  gradient?: string
-  /** Kept for API compatibility; no longer rendered (no emoji fallbacks). */
-  emoji?: string
   alt: string
   className?: string
 }

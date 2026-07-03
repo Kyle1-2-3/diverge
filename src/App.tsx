@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { IntentionId } from './types'
+import { InteractionsProvider } from './state/interactions'
 import PhoneFrame from './components/PhoneFrame'
+import ToastHost from './components/Toast'
 import LandingScreen from './components/LandingScreen'
 import IntentionalMode from './components/IntentionalMode'
 import Feed from './components/Feed'
@@ -35,7 +37,8 @@ function App() {
   }
 
   return (
-    <PhoneFrame>
+    <InteractionsProvider>
+      <PhoneFrame>
       {phase === 'landing' && (
         <LandingScreen onStart={() => setPhase('mood')} />
       )}
@@ -81,7 +84,11 @@ function App() {
         <ReflectionScreen onDone={() => setReflectOpen(false)} />
       )}
       {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}
-    </PhoneFrame>
+
+      {/* Feedback toasts ("Post hidden · Undo", "Link copied"). */}
+      <ToastHost />
+      </PhoneFrame>
+    </InteractionsProvider>
   )
 }
 

@@ -1,13 +1,26 @@
 import { stories } from '../data/stories'
+import { useInteractions } from '../state/interactions'
 import Avatar from './Avatar'
 
+interface StoriesBarProps {
+  /** Called with the tapped story's id — opens the fullscreen viewer. */
+  onOpenStory: (id: string) => void
+}
+
 /** Horizontal, swipeable story tiles at the top of the feed. */
-export default function StoriesBar() {
+export default function StoriesBar({ onOpenStory }: StoriesBarProps) {
+  const { showToast } = useInteractions()
+
   return (
     <div className="no-scrollbar flex gap-3 overflow-x-auto border-b-4 border-black bg-white px-4 py-3">
       {stories.map((story) => (
         <button
           key={story.id}
+          onClick={() =>
+            story.isYou
+              ? showToast({ message: 'Posting stories is not in this demo — yet' })
+              : onOpenStory(story.id)
+          }
           className="flex w-16 shrink-0 flex-col items-center gap-1"
         >
           <span className="relative">

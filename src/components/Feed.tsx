@@ -1,7 +1,11 @@
+import { useMemo, useState } from 'react'
 import type { IntentionId } from '../types'
 import { intentions } from '../data/intentions'
 import { getFeedForIntention } from '../lib/feed'
+import { useInteractions } from '../state/interactions'
 import StoriesBar from './StoriesBar'
+import StoryViewer from './StoryViewer'
+import NotificationsSheet from './NotificationsSheet'
 import PostCard from './PostCard'
 import Logo from './Logo'
 import { Heart } from './Icons'
@@ -24,8 +28,17 @@ export default function Feed({
   onExplore,
   onChangeMood,
 }: FeedProps) {
+  const { hidden } = useInteractions()
+  const [storyId, setStoryId] = useState<string | null>(null)
+  const [activityOpen, setActivityOpen] = useState(false)
+
   const intention = intentions.find((i) => i.id === intentionId)
-  const feed = getFeedForIntention(intentionId)
+  // Recompute only when the intention or hidden set changes — and drop
+  // anything the user marked "not interested".
+  const feed = useMemo(
+    () => getFeedForIntention(intentionId).filter((p) => !hidden.has(p.id)),
+    [intentionId, hidden],
+  )
   const outsideCount = feed.filter((p) => p.isOutsideBubble).length
 
   return (
@@ -43,13 +56,19 @@ export default function Feed({
               {intention.title}
             </button>
           )}
-          <button className="text-black" aria-label="Notifications">
+          <button
+            onClick={() => setActivityOpen(true)}
+            className="relative text-black"
+            aria-label="Notifications"
+          >
             <Heart className="h-6 w-6" />
+            {/* Unread dot */}
+            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 border-2 border-white bg-brand" />
           </button>
         </div>
       </header>
 
-      <StoriesBar />
+      <StoriesBar onOpenStory={setStoryId} />
 
       {/* Feed — hard black dividers between posts */}
       <div className="divide-y-4 divide-black border-b-4 border-black">
@@ -105,6 +124,14 @@ export default function Feed({
           </button>
         </div>
       </div>
+
+      {/* Overlays */}
+      {storyId && (
+        <StoryViewer initialId={storyId} onClose={() => setStoryId(null)} />
+      )}
+      {activityOpen && (
+        <NotificationsSheet onClose={() => setActivityOpen(false)} />
+      )}
     </div>
   )
 }

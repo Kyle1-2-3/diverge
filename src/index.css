@@ -89,3 +89,16 @@ body {
 .animate-pop-in {
   animation: popIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* Story progress bar — duration must match STORY_MS in StoryViewer.tsx. */
+@keyframes storyBar {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+.animate-story-bar {
+  animation: storyBar 5s linear both;
+}

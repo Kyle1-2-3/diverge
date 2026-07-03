@@ -1,8 +1,13 @@
+import { useState } from 'react'
 import type { IntentionId } from '../types'
 import { currentUser } from '../data/user'
+import { posts } from '../data/posts'
 import { getRecap } from '../lib/feed'
+import { useInteractions } from '../state/interactions'
 import DiversityScore from './DiversityScore'
+import SmartImage from './SmartImage'
 import Avatar from './Avatar'
+import { Bookmark } from './Icons'
 
 interface ProfileScreenProps {
   intentionId: IntentionId
@@ -24,6 +29,9 @@ export default function ProfileScreen({
 }: ProfileScreenProps) {
   const recap = getRecap(intentionId)
   const u = currentUser
+  const { saved } = useInteractions()
+  const [gridTab, setGridTab] = useState<'posts' | 'saved'>('posts')
+  const savedPosts = posts.filter((p) => saved.has(p.id))
 
   return (
     <div className="bg-white pb-8">
@@ -130,19 +138,55 @@ export default function ProfileScreen({
         </button>
       </div>
 
-      {/* Profile grid — real photos, not emoji tiles. */}
-      <div className="mt-6 grid grid-cols-3 gap-1 border-t-4 border-black px-1 pt-1">
-        {u.grid.map((_, i) => (
-          <div key={i} className="aspect-square border-2 border-black">
-            <img
-              src={`https://picsum.photos/seed/divgrid${i}/400/400`}
-              alt=""
-              loading="lazy"
-              className="h-full w-full object-cover"
-            />
-          </div>
+      {/* Grid tabs — your posts vs. everything you've bookmarked. */}
+      <div className="mt-6 flex border-t-4 border-black">
+        {(['posts', 'saved'] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setGridTab(t)}
+            className={`flex-1 border-b-2 border-black py-2.5 font-display text-[11px] font-bold uppercase tracking-widest transition-colors ${
+              gridTab === t ? 'bg-black text-white' : 'bg-white text-muted'
+            }`}
+          >
+            {t === 'posts' ? 'Posts' : `Saved (${savedPosts.length})`}
+          </button>
         ))}
       </div>
+
+      {gridTab === 'posts' ? (
+        // Profile grid — real photos, not emoji tiles.
+        <div className="grid grid-cols-3 gap-1 px-1 pt-1">
+          {u.grid.map((_, i) => (
+            <div key={i} className="aspect-square border-2 border-black">
+              <img
+                src={`https://picsum.photos/seed/divgrid${i}/400/400`}
+                alt=""
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      ) : savedPosts.length > 0 ? (
+        // Everything the user bookmarked, pulled live from the store.
+        <div className="grid grid-cols-3 gap-1 px-1 pt-1">
+          {savedPosts.map((p) => (
+            <div key={p.id} className="aspect-square border-2 border-black">
+              <SmartImage src={p.image} alt={p.caption} className="h-full w-full" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="px-6 py-10 text-center">
+          <Bookmark className="mx-auto h-8 w-8 text-muted" />
+          <p className="mt-2 font-display text-sm font-bold uppercase tracking-tight text-black">
+            Nothing saved yet
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            Tap the bookmark on any post and it'll show up here.
+          </p>
+        </div>
+      )}
     </div>
   )
 }
