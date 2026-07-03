@@ -2,6 +2,7 @@ import type { IntentionId } from '../types'
 import { currentUser } from '../data/user'
 import { getRecap } from '../lib/feed'
 import DiversityScore from './DiversityScore'
+import Avatar from './Avatar'
 
 interface ProfileScreenProps {
   intentionId: IntentionId
@@ -27,13 +28,13 @@ export default function ProfileScreen({
   return (
     <div className="bg-white pb-8">
       {/* Top bar */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-black/5 bg-white/85 px-4 py-3 backdrop-blur-xl">
-        <span className="font-display text-lg font-bold text-ink">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b-4 border-black bg-white px-4 py-3">
+        <span className="font-display text-lg font-bold uppercase tracking-tight text-black">
           {u.handle}
         </span>
         <button
           onClick={onAbout}
-          className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-muted active:text-ink"
+          className="border-2 border-black bg-white px-3 py-1 font-display text-[11px] font-bold uppercase tracking-tight text-black transition-transform active:translate-x-0.5 active:translate-y-0.5"
         >
           About
         </button>
@@ -42,9 +43,7 @@ export default function ProfileScreen({
       {/* Profile header */}
       <div className="px-5 pt-5">
         <div className="flex items-center gap-5">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-200 to-pink-200 text-4xl ring-2 ring-white">
-            {u.avatar}
-          </div>
+          <Avatar name={u.name} className="h-20 w-20 text-2xl shadow-hard-sm" />
           <div className="flex flex-1 justify-around text-center">
             {[
               { n: u.posts, l: 'posts' },
@@ -52,17 +51,21 @@ export default function ProfileScreen({
               { n: u.following, l: 'following' },
             ].map((s) => (
               <div key={s.l}>
-                <p className="font-display text-lg font-bold text-ink">{s.n}</p>
-                <p className="text-xs text-muted">{s.l}</p>
+                <p className="font-mono text-lg font-bold tabular-nums text-black">
+                  {s.n}
+                </p>
+                <p className="font-mono text-[11px] uppercase tracking-tight text-muted">
+                  {s.l}
+                </p>
               </div>
             ))}
           </div>
         </div>
-        <p className="mt-3 text-sm font-semibold text-ink">{u.name}</p>
+        <p className="mt-3 font-display text-sm font-bold text-black">{u.name}</p>
         <p className="text-sm text-muted">{u.bio}</p>
         <button
           onClick={onChangeMood}
-          className="mt-4 w-full rounded-xl bg-gray-100 py-2 text-sm font-semibold text-ink transition-colors active:bg-gray-200"
+          className="mt-4 w-full border-2 border-black bg-white py-2 font-display text-sm font-bold uppercase tracking-tight text-black shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
         >
           Set today's mood
         </button>
@@ -70,33 +73,32 @@ export default function ProfileScreen({
 
       {/* ---- The Wrapped-style recap (hero) ---- */}
       <div className="mt-6 px-4">
-        <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 p-5 text-white shadow-lg">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
+        <div className="border-2 border-black bg-brand p-5 text-white shadow-hard">
+          <p className="font-display text-[11px] font-bold uppercase tracking-widest text-white/80">
             Your week on Diverge
           </p>
-          <h2 className="mt-1 font-display text-xl font-extrabold leading-tight">
+          <h2 className="mt-1 font-display text-xl font-bold uppercase leading-tight tracking-tight">
             {recap.headline}
           </h2>
 
-          {/* Stat cards */}
+          {/* Stat cards — numbers are the hero, no emoji. */}
           <div className="mt-4 grid grid-cols-3 gap-2.5">
             {recap.stats.map((s) => (
               <div
                 key={s.label}
-                className="rounded-2xl bg-white/15 p-3 text-center backdrop-blur"
+                className="border-2 border-white bg-brand p-3 text-center"
               >
-                <div className="text-xl">{s.emoji}</div>
-                <div className="mt-1 font-display text-xl font-extrabold">
+                <div className="font-mono text-3xl font-bold tabular-nums leading-none">
                   {s.value}
                 </div>
-                <div className="text-[10px] leading-tight text-white/80">
+                <div className="mt-2 font-mono text-[10px] uppercase leading-tight tracking-tight text-white/90">
                   {s.label}
                 </div>
               </div>
             ))}
           </div>
 
-          <button className="mt-4 w-full rounded-xl bg-white/20 py-2.5 text-sm font-semibold backdrop-blur transition-colors active:bg-white/30">
+          <button className="mt-4 w-full border-2 border-white bg-white py-2.5 font-display text-sm font-bold uppercase tracking-widest text-black transition-transform active:translate-x-0.5 active:translate-y-0.5">
             Share your recap
           </button>
         </div>
@@ -111,31 +113,33 @@ export default function ProfileScreen({
       <div className="mt-4 px-4">
         <button
           onClick={onReflect}
-          className="flex w-full items-center gap-3 rounded-3xl bg-white p-4 text-left shadow-sm ring-1 ring-black/5 transition-transform active:scale-[0.99]"
+          className="flex w-full items-center gap-3 border-2 border-black bg-white p-4 text-left shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
         >
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-soft text-xl">
-            🪞
+          <span className="flex h-11 w-11 items-center justify-center border-2 border-black bg-white font-mono text-lg font-bold text-black">
+            ❯
           </span>
           <span className="flex-1">
-            <span className="block text-sm font-semibold text-ink">
+            <span className="block font-display text-sm font-bold uppercase tracking-tight text-black">
               Reflect on your week
             </span>
             <span className="block text-xs text-muted">
               A quiet moment, just for you
             </span>
           </span>
-          <span className="text-muted">→</span>
+          <span className="font-display text-lg font-bold text-black">→</span>
         </button>
       </div>
 
-      {/* Profile grid */}
-      <div className="mt-6 grid grid-cols-3 gap-0.5 px-0.5">
-        {u.grid.map((tile, i) => (
-          <div
-            key={i}
-            className="flex aspect-square items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-3xl"
-          >
-            {tile}
+      {/* Profile grid — real photos, not emoji tiles. */}
+      <div className="mt-6 grid grid-cols-3 gap-1 border-t-4 border-black px-1 pt-1">
+        {u.grid.map((_, i) => (
+          <div key={i} className="aspect-square border-2 border-black">
+            <img
+              src={`https://picsum.photos/seed/divgrid${i}/400/400`}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
           </div>
         ))}
       </div>

@@ -1,20 +1,27 @@
-/* Two clean fonts from Google Fonts (must come before other rules). */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+/* Two-font system: a heavy grotesque for headlines, monospace for body/meta. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 /* Tailwind v4 — single import pulls in base, components and utilities. */
 @import 'tailwindcss';
 
 /* ---- Design tokens / theme -------------------------------------------------
-   Tailwind v4 reads custom theme values from the @theme block, which makes
-   utilities like `bg-brand` or `font-display` available throughout the app. */
+   Brutalist system: pure black ink, white surfaces, one harsh accent, and a
+   warm paper canvas behind the phone. No gradients, no soft shadows. */
 @theme {
-  --color-brand: #6d5efc;
-  --color-brand-soft: #eef0ff;
-  --color-ink: #1a1a2e;
-  --color-muted: #6b6b7b;
+  --color-brand: #2b3bff; /* one harsh electric-blue accent */
+  --color-brand-soft: #e9ebff;
+  --color-ink: #000000;
+  --color-muted: #555555;
+  --color-canvas: #e7e5dd;
 
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', ui-sans-serif, sans-serif;
+  --font-sans: 'Space Mono', ui-monospace, monospace;
+  --font-mono: 'Space Mono', ui-monospace, monospace;
+}
+
+/* Align digits everywhere numbers matter (counts, scores, stats). */
+.tnum {
+  font-variant-numeric: tabular-nums;
 }
 
 html,
@@ -27,11 +34,8 @@ body,
 
 body {
   font-family: var(--font-sans);
-  /* A soft ambient backdrop so the phone mockup feels like it's floating. */
-  background:
-    radial-gradient(1200px 600px at 10% -10%, #e8e6ff 0%, transparent 60%),
-    radial-gradient(1000px 500px at 110% 10%, #ffe9f3 0%, transparent 55%),
-    #f4f4fb;
+  /* Flat paper canvas — the black-bordered phone slab sits on top of it. */
+  background: var(--color-canvas);
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
 }
@@ -44,6 +48,17 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Hard offset shadows — the core brutalist move (no blur, pure black). */
+.shadow-hard {
+  box-shadow: 4px 4px 0 0 #000;
+}
+.shadow-hard-sm {
+  box-shadow: 2px 2px 0 0 #000;
+}
+.shadow-hard-lg {
+  box-shadow: 6px 6px 0 0 #000;
 }
 
 /* Reusable entrance animation for feed cards & screen transitions. */

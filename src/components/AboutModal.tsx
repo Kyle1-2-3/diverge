@@ -6,29 +6,31 @@ interface AboutModalProps {
 export default function AboutModal({ onClose }: AboutModalProps) {
   return (
     <div
-      className="absolute inset-0 z-40 flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className="absolute inset-0 z-40 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
-        className="animate-pop-in max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl"
+        className="animate-pop-in max-h-[88%] w-full overflow-y-auto border-2 border-black bg-white p-6 shadow-hard-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-start justify-between">
+        <div className="mb-4 flex items-start justify-between border-b-4 border-black pb-3">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🧭</span>
-            <h2 className="font-display text-xl font-bold text-ink">
+            <span className="flex h-7 w-7 items-center justify-center border-2 border-black bg-brand font-display text-sm font-bold text-white">
+              D
+            </span>
+            <h2 className="font-display text-xl font-bold uppercase tracking-tight text-black">
               About Diverge
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-muted hover:text-ink"
+            className="border-2 border-black bg-white px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-tight text-black active:translate-x-0.5 active:translate-y-0.5"
           >
             Close
           </button>
         </div>
 
-        <div className="space-y-4 text-sm leading-relaxed text-ink">
+        <div className="space-y-4 text-sm leading-relaxed text-black">
           <p>
             Social media platforms often optimize for{' '}
             <strong>attention and engagement</strong>. This can create filter
@@ -42,29 +44,30 @@ export default function AboutModal({ onClose }: AboutModalProps) {
             viewpoints instead.
           </p>
 
-          <div className="rounded-2xl bg-brand-soft p-4">
-            <p className="mb-2 font-semibold text-brand">
+          <div className="border-2 border-black bg-brand-soft p-4">
+            <p className="mb-2 font-display text-sm font-bold uppercase tracking-tight text-black">
               Three ideas this prototype tests:
             </p>
-            <ul className="list-inside list-disc space-y-1.5 text-muted">
+            <ul className="space-y-2 text-muted">
               <li>
-                <span className="text-ink">Intentional use</span> — you choose
-                what you want before you scroll.
+                <span className="font-bold text-black">→ Intentional use</span> —
+                you choose what you want before you scroll.
               </li>
               <li>
-                <span className="text-ink">Transparency</span> — every post can
-                explain why it appeared.
+                <span className="font-bold text-black">→ Transparency</span> —
+                every post can explain why it appeared.
               </li>
               <li>
-                <span className="text-ink">Diversity</span> — the feed actively
-                widens your bubble and stops before it becomes endless.
+                <span className="font-bold text-black">→ Diversity</span> — the
+                feed actively widens your bubble and stops before it becomes
+                endless.
               </li>
             </ul>
           </div>
 
-          <p className="text-xs text-muted">
-            This is a non-functional prototype built for a school research and
-            design project. All posts, users, and scores are fictional.
+          <p className="font-display text-[11px] uppercase tracking-tight text-muted">
+            Non-functional prototype for a school research project. All posts,
+            users, and scores are fictional.
           </p>
         </div>
       </div>

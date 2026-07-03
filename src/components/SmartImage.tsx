@@ -2,23 +2,21 @@ import { useState } from 'react'
 
 interface SmartImageProps {
   src: string
-  /** Tailwind gradient classes shown while loading or if the photo fails. */
-  gradient: string
-  /** Big emoji shown on the gradient fallback. */
-  emoji: string
+  /** Kept for API compatibility; no longer used (fallback is flat). */
+  gradient?: string
+  /** Kept for API compatibility; no longer rendered (no emoji fallbacks). */
+  emoji?: string
   alt: string
   className?: string
 }
 
 /**
- * Loads a real photo with a graceful fallback: the gradient + emoji shows while
- * the image loads, and stays if the device is offline or the photo 404s.
- * This keeps the app beautiful and reliable for a live demo.
+ * Loads a real photo with a graceful, on-brand fallback: a flat neutral block
+ * shows while the image loads and stays if the device is offline or the photo
+ * 404s. No rainbow gradients, no emoji — it matches the brutalist system.
  */
 export default function SmartImage({
   src,
-  gradient,
-  emoji,
   alt,
   className = '',
 }: SmartImageProps) {
@@ -26,14 +24,18 @@ export default function SmartImage({
   const [failed, setFailed] = useState(false)
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
-      {/* Gradient + emoji layer (fallback / loading state). */}
+    <div className={`relative overflow-hidden bg-neutral-200 ${className}`}>
+      {/* Flat fallback / loading state. */}
       <div
-        className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${gradient} transition-opacity duration-500 ${
+        className={`absolute inset-0 flex items-center justify-center bg-neutral-200 transition-opacity duration-300 ${
           loaded && !failed ? 'opacity-0' : 'opacity-100'
         }`}
       >
-        <span className="text-7xl drop-shadow-lg">{emoji}</span>
+        {failed && (
+          <span className="font-mono text-[10px] uppercase tracking-widest text-black/40">
+            no image
+          </span>
+        )}
       </div>
 
       {/* The real photo. */}

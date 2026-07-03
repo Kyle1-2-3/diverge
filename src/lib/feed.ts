@@ -89,10 +89,10 @@ export function getRecap(intentionId: IntentionId) {
   // A warm, shareable headline that scales with how far they ranged.
   const headline =
     score >= 85
-      ? 'You went way past your bubble this week 🚀'
+      ? 'You went way past your bubble this week'
       : score >= 65
-        ? 'You stretched your feed nicely this week 🌱'
-        : 'A cozy week — room to roam next time 🛋️'
+        ? 'You stretched your feed nicely this week'
+        : 'A quiet week — room to roam next time'
 
   return {
     headline,

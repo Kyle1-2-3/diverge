@@ -3,7 +3,7 @@ export const currentUser = {
   name: 'You',
   handle: 'you',
   avatar: '🦊',
-  bio: 'just here to see things differently ✨',
+  bio: 'just here to see things differently',
   posts: 14,
   followers: 312,
   following: 188,

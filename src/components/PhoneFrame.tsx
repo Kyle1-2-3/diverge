@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { LogoMark } from './Logo'
 
 interface PhoneFrameProps {
   children: ReactNode
@@ -12,10 +13,20 @@ interface PhoneFrameProps {
  */
 export default function PhoneFrame({ children }: PhoneFrameProps) {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-0 sm:p-6">
-      <div className="relative flex h-screen w-full flex-col overflow-hidden bg-white shadow-2xl ring-1 ring-black/5 sm:h-[860px] sm:max-h-[92vh] sm:w-[420px] sm:rounded-[2.75rem] sm:ring-8 sm:ring-black/80">
-        {/* Notch — decorative, hidden on real mobile screens. */}
-        <div className="pointer-events-none absolute left-1/2 top-0 z-40 hidden h-7 w-36 -translate-x-1/2 rounded-b-2xl bg-black/80 sm:block" />
+    <div className="flex min-h-screen w-full items-center justify-center p-0 sm:p-8">
+      <div className="relative flex h-screen w-full flex-col overflow-hidden bg-white sm:h-[860px] sm:max-h-[92vh] sm:w-[420px] sm:rounded-none sm:border-4 sm:border-black sm:shadow-hard-lg">
+        {/* Status strip — flat black bar instead of a glossy notch. */}
+        <div className="pointer-events-none absolute left-0 right-0 top-0 z-40 hidden h-7 items-center justify-between border-b-4 border-black bg-black px-3 sm:flex">
+          <span className="flex items-center gap-1.5 text-white">
+            <LogoMark className="h-3 w-3" />
+            <span className="font-mono text-[10px] font-bold uppercase tracking-widest">
+              DIVERGE
+            </span>
+          </span>
+          <span className="font-mono text-[10px] font-bold tracking-widest text-white">
+            ▮▮▮ 100%
+          </span>
+        </div>
 
         {/* App surface. */}
         <div className="relative flex h-full w-full flex-col overflow-hidden">
