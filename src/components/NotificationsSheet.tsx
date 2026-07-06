@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { notifications } from '../data/notifications'
+import { useModel } from '../state/model'
 import Avatar from './Avatar'
 
 interface NotificationsSheetProps {
@@ -7,13 +8,15 @@ interface NotificationsSheetProps {
 }
 
 /**
- * The activity panel behind the heart icon in the feed's top bar — likes,
- * follows and mentions, with the diverge accent on activity from outside the
- * user's usual circle. Follow-backs toggle locally so the panel feels alive.
+ * The activity panel — one of the clearest reads on a business model:
+ *  - attention:    every ping is urgent, red, and about you. Don't fall behind.
+ *  - subscription: one calm daily digest, delivered on your schedule.
+ *  - public:       only people, never numbers. Nothing to "miss".
  */
 export default function NotificationsSheet({
   onClose,
 }: NotificationsSheetProps) {
+  const { model } = useModel()
   const [followed, setFollowed] = useState<Set<string>>(new Set())
 
   const toggleFollow = (id: string) =>
@@ -23,6 +26,22 @@ export default function NotificationsSheet({
       else next.add(id)
       return next
     })
+
+  // Public model drops like-counts entirely — engagement isn't news.
+  const items =
+    model === 'public'
+      ? notifications.filter((n) => n.type !== 'like')
+      : notifications
+  const likeCount = notifications.filter((n) => n.type === 'like').length
+  const followCount = notifications.filter((n) => n.type === 'follow').length
+  const commentCount = notifications.filter((n) => n.type === 'comment').length
+
+  const title =
+    model === 'attention'
+      ? 'Activity'
+      : model === 'subscription'
+        ? 'Daily digest'
+        : 'Updates'
 
   return (
     <div
@@ -35,7 +54,7 @@ export default function NotificationsSheet({
       >
         <div className="flex items-center justify-between border-b-2 border-black px-4 py-3">
           <span className="font-display text-sm font-bold uppercase tracking-widest text-black">
-            Activity
+            {title}
           </span>
           <button
             onClick={onClose}
@@ -46,12 +65,42 @@ export default function NotificationsSheet({
           </button>
         </div>
 
+        {/* Model-specific framing before the list */}
+        {model === 'attention' && (
+          <div className="border-b-2 border-black bg-brand px-4 py-2 text-white">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-widest">
+              🔥 3 people posted while you were away — don't fall behind
+            </p>
+          </div>
+        )}
+        {model === 'subscription' && (
+          <div className="border-b-2 border-black bg-brand-soft px-4 py-2.5">
+            <p className="text-xs leading-snug text-black">
+              Delivered once a day, at a time you chose. Today:{' '}
+              <span className="font-bold">
+                {likeCount} likes · {followCount} follows · {commentCount}{' '}
+                comments
+              </span>
+              . Nothing pinged you.
+            </p>
+          </div>
+        )}
+        {model === 'public' && (
+          <div className="border-b-2 border-black bg-brand-soft px-4 py-2.5">
+            <p className="text-xs leading-snug text-black">
+              We notify you about <span className="font-bold">people</span>,
+              never about numbers. Likes are visible on your posts if you go
+              looking — they won't come looking for you.
+            </p>
+          </div>
+        )}
+
         <div className="no-scrollbar flex-1 overflow-y-auto py-1">
-          {notifications.map((n) => (
+          {items.map((n) => (
             <div key={n.id} className="flex items-center gap-2.5 px-4 py-2.5">
               <span className="relative shrink-0">
                 <Avatar name={n.handle} className="h-10 w-10 text-xs" />
-                {n.outside && (
+                {n.outside && model !== 'attention' && (
                   <span className="absolute -right-1 -top-1 border-2 border-black bg-brand px-0.5 font-mono text-[8px] font-bold text-white">
                     ↯
                   </span>
@@ -79,7 +128,11 @@ export default function NotificationsSheet({
             </div>
           ))}
           <p className="px-4 pb-4 pt-2 text-center font-mono text-[10px] uppercase tracking-widest text-muted">
-            You're all caught up
+            {model === 'attention'
+              ? 'Things move fast — check back soon'
+              : model === 'subscription'
+                ? "That's everything. See you tomorrow."
+                : 'No streaks. No red dots. Nothing to miss.'}
           </p>
         </div>
       </div>

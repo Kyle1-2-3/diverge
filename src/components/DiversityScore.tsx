@@ -6,9 +6,10 @@ interface DiversityScoreProps {
 }
 
 /**
- * The signature "bubble map": your feed's coverage across the six topic
- * buckets, drawn as filled columns. Thin coverage (a gap in your bubble) is
- * marked in the accent colour — the one place the app points you outward.
+ * Topic coverage: your feed's spread across the six topic buckets, drawn as
+ * filled columns. Thin coverage (a gap in your bubble) is marked in the
+ * accent colour — the one place the app points you outward. (The galaxy-style
+ * Bubble Map above shows the same world spatially; this is the numeric view.)
  */
 export default function DiversityScore({ score, bars }: DiversityScoreProps) {
   return (
@@ -17,7 +18,7 @@ export default function DiversityScore({ score, bars }: DiversityScoreProps) {
       <div className="flex items-start justify-between gap-4 border-b-2 border-black pb-4">
         <div>
           <h3 className="font-display text-lg font-bold uppercase tracking-tight text-black">
-            Bubble map
+            Topic coverage
           </h3>
           <p className="mt-0.5 text-xs leading-relaxed text-muted">
             What your feed covered — and where it's thin.

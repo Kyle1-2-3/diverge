@@ -53,6 +53,18 @@ export const posts: Post[] = [
     whyReason:
       'You love fashion — we added a sustainability angle to widen how you see it.',
     isOutsideBubble: true,
+    flip: {
+      handle: 'policy.papers',
+      avatar: '📊',
+      verified: true,
+      image: photo('divflipearth'),
+      location: 'Brussels',
+      caption:
+        'friendly counter: your closet isn’t the climate problem — a handful of companies drive most emissions. wear what you own, vote like it matters 🗳️',
+      likes: 1220,
+      comments: 187,
+    },
+    sources: ['UN Environment', 'Carbon Brief'],
   },
   {
     id: 'p3',
@@ -74,6 +86,7 @@ export const posts: Post[] = [
     whyReason:
       'Your feed was mostly entertainment today, so we slipped in something happening in the world.',
     isOutsideBubble: true,
+    sources: ['Reuters', 'AP News', 'The Guardian'],
   },
   {
     id: 'p4',
@@ -115,6 +128,17 @@ export const posts: Post[] = [
     whyReason:
       'You’ve been scrolling a while — here’s something softer to land on.',
     isOutsideBubble: false,
+    flip: {
+      handle: 'coach.dana',
+      avatar: '⏱️',
+      verified: false,
+      image: photo('divflipcalm'),
+      location: '',
+      caption:
+        'gentle pushback: sometimes “rest” is avoidance in a cozy sweater. if you’re tired every single day, the fix might be a plan, not a nap 🗓️',
+      likes: 890,
+      comments: 340,
+    },
   },
   {
     id: 'p6',
@@ -136,6 +160,17 @@ export const posts: Post[] = [
     whyReason:
       'This challenges an idea you usually agree with — on purpose. A little friction keeps your feed honest.',
     isOutsideBubble: true,
+    flip: {
+      handle: 'offline.club',
+      avatar: '🕯️',
+      verified: false,
+      image: photo('divfliptalk'),
+      location: '',
+      caption:
+        'counter-take: i deleted every feed app for 30 days and my attention span literally came back. “better tech” is a nice dream — the business model is your attention 🕯️',
+      likes: 540,
+      comments: 210,
+    },
   },
   {
     id: 'p7',
@@ -198,6 +233,17 @@ export const posts: Post[] = [
     likedBy: 'yujin_kim',
     whyReason: 'Trending right now, and right up your alley.',
     isOutsideBubble: false,
+    flip: {
+      handle: 'wearitout',
+      avatar: '🧵',
+      verified: false,
+      image: photo('divfliptrend'),
+      location: '',
+      caption:
+        'reminder that “bold color is back” is a sentence designed to sell you clothes. trends cycle fast so your closet feels old. it isn’t 🧵',
+      likes: 1510,
+      comments: 96,
+    },
   },
   {
     id: 'p10',
@@ -219,6 +265,7 @@ export const posts: Post[] = [
     whyReason:
       'Balancing your mostly-entertainment day with one hopeful thing.',
     isOutsideBubble: true,
+    sources: ['BBC Africa', 'Bloomberg Green'],
   },
   {
     id: 'p11',

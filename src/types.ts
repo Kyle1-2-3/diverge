@@ -31,6 +31,18 @@ export interface Intention {
   targetScore: number
 }
 
+/** The opposite-viewpoint post shown when the user flips a card. */
+export interface PostFlip {
+  handle: string
+  avatar: string
+  verified: boolean
+  image: string
+  location: string
+  caption: string
+  likes: number
+  comments: number
+}
+
 export interface Post {
   id: string
   username: string
@@ -59,6 +71,10 @@ export interface Post {
   whyReason: string
   /** True when Diverge added this post to broaden the user's perspective. */
   isOutsideBubble: boolean
+  /** Optional opposite take on the same topic — powers the card flip. */
+  flip?: PostFlip
+  /** Trusted outlets also covering this story (public-interest model). */
+  sources?: string[]
 }
 
 /** A single bar in the Diversity Score breakdown. */

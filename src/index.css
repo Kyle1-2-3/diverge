@@ -19,6 +19,35 @@
   --font-mono: 'Space Mono', ui-monospace, monospace;
 }
 
+/* ---- Business-model themes -------------------------------------------------
+   The experiment: same app, three funding models. Each model swaps the brand
+   accent (and soft tint) via CSS variables, so every bg-brand / text-brand in
+   the tree re-colours itself. Scoped colour transitions live in @layer base so
+   explicit transition utilities (e.g. active-press transforms) still win. */
+.model-attention {
+  --color-brand: #ff2b47; /* hot red — urgency, notifications, ads */
+  --color-brand-soft: #ffe7ea;
+}
+.model-subscription {
+  --color-brand: #5b5bd6; /* calm indigo — paid quiet */
+  --color-brand-soft: #eaeafa;
+}
+.model-public {
+  --color-brand: #1e8a5a; /* civic green — public benefit */
+  --color-brand-soft: #e3f2ea;
+}
+@layer base {
+  .model-scope,
+  .model-scope * {
+    transition:
+      background-color 0.45s ease,
+      border-color 0.45s ease,
+      color 0.45s ease,
+      fill 0.45s ease,
+      stroke 0.45s ease;
+  }
+}
+
 /* Align digits everywhere numbers matter (counts, scores, stats). */
 .tnum {
   font-variant-numeric: tabular-nums;
@@ -88,6 +117,31 @@ body {
 }
 .animate-pop-in {
   animation: popIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 3D card flip for the "flip the perspective" feature. Both faces share one
+   grid cell, so the card is as tall as the taller face; backface-visibility
+   hides whichever side points away. The overlay sheets (comments, why) are
+   kept OUTSIDE this transformed subtree — a transform would trap their
+   absolute positioning inside the card. */
+.flip-scene {
+  perspective: 1200px;
+}
+.flip-inner {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-face-back {
+  transform: rotateY(180deg);
 }
 
 /* Story progress bar — duration must match STORY_MS in StoryViewer.tsx. */
