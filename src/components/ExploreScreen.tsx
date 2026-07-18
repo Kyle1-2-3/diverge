@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Post } from '../types'
 import type { BusinessModel } from '../data/models'
 import { posts } from '../data/posts'
-import { categoryMeta } from '../data/categories'
+import { topicMeta } from '../data/topics'
 import { compact } from '../lib/format'
+import { buildInterests, familiarityOf } from '../lib/recommend'
+import { useInteractions } from '../state/interactions'
 import { useModel } from '../state/model'
 import SmartImage from './SmartImage'
 import Avatar from './Avatar'
@@ -12,6 +14,14 @@ import { Heart } from './Icons'
 interface Chip {
   label: string
   test: (p: Post) => boolean
+}
+
+interface ExploreCfg {
+  title: string
+  placeholder: string
+  note: string | null
+  chips: Chip[]
+  order: (list: Post[]) => Post[]
 }
 
 const fresh = (p: Post) =>
@@ -25,69 +35,73 @@ const age = (p: Post) => {
   return n * 1440
 }
 
-// What "discovery" even means depends on who pays for it.
-const EXPLORE: Record<
-  BusinessModel,
-  {
-    title: string
-    placeholder: string
-    note: string | null
-    chips: Chip[]
-    order: (list: Post[]) => Post[]
-  }
-> = {
-  attention: {
-    title: 'For you',
-    placeholder: 'search (or just keep scrolling)',
-    note: null,
-    chips: [
-      { label: 'For you', test: () => true },
-      { label: '🔥 Viral', test: (p) => p.likes >= 3000 },
-      { label: 'Trending', test: (p) => p.likes >= 2000 },
-      { label: 'Fresh', test: fresh },
-    ],
-    // The wall is ranked by pure heat.
-    order: (list) => [...list].sort((a, b) => b.likes - a.likes),
-  },
-  subscription: {
-    title: 'Search',
-    placeholder: 'what are you looking for?',
-    note: 'We recommend less, so you choose more. Results are newest first.',
-    chips: [
-      { label: 'Everything', test: () => true },
-      { label: 'Fresh', test: fresh },
-    ],
-    order: (list) => [...list].sort((a, b) => age(a) - age(b)),
-  },
-  public: {
-    title: 'Outside your bubble',
-    placeholder: 'search every perspective…',
-    note: 'Discovery starts beyond your usual. Flip the chips to compare worlds.',
-    chips: [
-      { label: '→ Beyond your bubble', test: (p) => p.isOutsideBubble },
-      { label: 'Balanced mix', test: () => true },
-      { label: 'Your usual', test: (p) => !p.isOutsideBubble },
-    ],
-    order: (list) => list,
-  },
-}
-
 /**
  * The discovery grid. Under the attention model it's a heat-ranked "For you"
  * wall; under subscription it's a search tool; under public interest it leads
- * with everything you don't usually see.
+ * with adjacent discoveries — relevant, never random.
  */
 export default function ExploreScreen() {
   const { model } = useModel()
+  const { liked, saved } = useInteractions()
   const [query, setQuery] = useState('')
   const [chip, setChip] = useState(0)
-  const cfg = EXPLORE[model]
 
-  // A model switch redefines the chips — reset to that model's default lens.
-  useEffect(() => {
-    setChip(0)
-    setQuery('')
-  }, [model])
+  const interests = useMemo(
+    () => buildInterests(posts, new Set([...liked, ...saved])),
+    [liked, saved],
+  )
+  /** Posts beyond the user's core topics (adjacent or wider). */
+  const discoveryIds = useMemo(
+    () =>
+      new Set(
+        posts
+          .filter((p) => familiarityOf(p, interests) !== 'core')
+          .map((p) => p.id),
+      ),
+    [interests],
+  )
+
+  // What "discovery" even means depends on who pays for it.
+  const cfg = useMemo<ExploreCfg>(() => {
+    const configs: Record<BusinessModel, ExploreCfg> = {
+      attention: {
+        title: 'For you',
+        placeholder: 'search (or just keep scrolling)',
+        note: null,
+        chips: [
+          { label: 'For you', test: () => true },
+          { label: '🔥 Viral', test: (p) => p.likes >= 3000 },
+          { label: 'Trending', test: (p) => p.likes >= 2000 },
+          { label: 'Fresh', test: fresh },
+        ],
+        order: (list) => [...list].sort((a, b) => b.likes - a.likes),
+      },
+      subscription: {
+        title: 'Search',
+        placeholder: 'what are you looking for?',
+        note: 'We recommend less, so you choose more. Results are newest first.',
+        chips: [
+          { label: 'Everything', test: () => true },
+          { label: 'Fresh', test: fresh },
+        ],
+        order: (list) => [...list].sort((a, b) => age(a) - age(b)),
+      },
+      public: {
+        title: 'One step out',
+        placeholder: 'search every topic…',
+        note: 'Discovery starts one step from your usual — related, never random.',
+        chips: [
+          { label: '→ Near your interests', test: (p) => discoveryIds.has(p.id) },
+          { label: 'Balanced mix', test: () => true },
+          { label: 'Your usual', test: (p) => !discoveryIds.has(p.id) },
+        ],
+        order: (list) => list,
+      },
+    }
+    return configs[model]
+  }, [model, discoveryIds])
+
+  // No reset-on-model-switch needed: the app remounts this screen per model.
 
   // Vary card heights for a masonry feel.
   const heights = ['h-52', 'h-64', 'h-44', 'h-60', 'h-48', 'h-56']
@@ -102,7 +116,7 @@ export default function ExploreScreen() {
         p.caption.toLowerCase().includes(q) ||
         p.handle.toLowerCase().includes(q) ||
         p.location.toLowerCase().includes(q) ||
-        categoryMeta[p.category].label.toLowerCase().includes(q),
+        topicMeta[p.primaryTopic].label.toLowerCase().includes(q),
     )
 
   return (
@@ -154,51 +168,48 @@ export default function ExploreScreen() {
 
       {/* Masonry grid */}
       <div className="columns-2 gap-3 px-3">
-        {visible.map((post, i) => {
-          const meta = categoryMeta[post.category]
-          return (
-            <div
-              key={post.id}
-              className="mb-3 break-inside-avoid border-2 border-black bg-white shadow-hard-sm"
-            >
-              <div className="relative border-b-2 border-black">
-                <SmartImage
-                  src={post.image}
-                  alt={post.caption}
-                  className={`w-full ${heights[i % heights.length]}`}
-                />
-                {/* The attention model never labels what's outside your bubble —
-                    that would remind you there's a bubble. */}
-                {post.isOutsideBubble && model !== 'attention' && (
-                  <span className="absolute right-2 top-2 border-2 border-black bg-brand px-1.5 py-0.5 font-display text-[10px] font-bold uppercase text-white">
-                    {model === 'public' ? 'different view' : 'new for you'}
+        {visible.map((post, i) => (
+          <div
+            key={post.id}
+            className="mb-3 break-inside-avoid border-2 border-black bg-white shadow-hard-sm"
+          >
+            <div className="relative border-b-2 border-black">
+              <SmartImage
+                src={post.image}
+                alt={post.caption}
+                className={`w-full ${heights[i % heights.length]}`}
+              />
+              {/* The attention model never labels discovery — that would
+                  remind you there's a world outside the wall. */}
+              {discoveryIds.has(post.id) && model !== 'attention' && (
+                <span className="absolute right-2 top-2 border-2 border-black bg-brand px-1.5 py-0.5 font-display text-[10px] font-bold uppercase text-white">
+                  {model === 'public' ? 'one step out' : 'new for you'}
+                </span>
+              )}
+            </div>
+            <div className="p-2.5">
+              <p className="line-clamp-2 text-xs leading-snug text-black">
+                {post.caption}
+              </p>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-[11px] text-muted">
+                  <Avatar name={post.handle} className="h-4 w-4 text-[8px]" />
+                  {post.handle}
+                </span>
+                {/* Public model shows no like-counts in discovery. */}
+                {model !== 'public' && (
+                  <span className="flex items-center gap-1 text-[11px] tabular-nums text-muted">
+                    <Heart className="h-3 w-3" />
+                    {compact(post.likes)}
                   </span>
                 )}
               </div>
-              <div className="p-2.5">
-                <p className="line-clamp-2 text-xs leading-snug text-black">
-                  {post.caption}
-                </p>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-[11px] text-muted">
-                    <Avatar name={post.handle} className="h-4 w-4 text-[8px]" />
-                    {post.handle}
-                  </span>
-                  {/* Public model shows no like-counts in discovery. */}
-                  {model !== 'public' && (
-                    <span className="flex items-center gap-1 text-[11px] tabular-nums text-muted">
-                      <Heart className="h-3 w-3" />
-                      {compact(post.likes)}
-                    </span>
-                  )}
-                </div>
-                <span className="mt-2 inline-block border-2 border-black bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-tight text-black">
-                  {meta.label}
-                </span>
-              </div>
+              <span className="mt-2 inline-block border-2 border-black bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-tight text-black">
+                {topicMeta[post.primaryTopic].label}
+              </span>
             </div>
-          )
-        })}
+          </div>
+        ))}
       </div>
 
       {/* Empty state when a search finds nothing */}

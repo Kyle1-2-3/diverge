@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -36,7 +37,11 @@ export function ModelProvider({ children }: { children: ReactNode }) {
   const [model, setModelState] = useState<BusinessModel>('attention')
   const [diversity, setDiversity] = useState(70)
   const [unread, setUnread] = useState(3)
-  const sessionStart = useRef(Date.now())
+  // Set once after mount (render must stay pure), refreshed on model switch.
+  const sessionStart = useRef<number | null>(null)
+  useEffect(() => {
+    sessionStart.current ??= Date.now()
+  }, [])
 
   const value = useMemo<ModelValue>(
     () => ({
@@ -53,7 +58,9 @@ export function ModelProvider({ children }: { children: ReactNode }) {
       bumpUnread: () => setUnread((n) => n + 1),
       clearUnread: () => setUnread(0),
       sessionMinutes: () =>
-        Math.max(0, Math.round((Date.now() - sessionStart.current) / 60000)),
+        sessionStart.current === null
+          ? 0
+          : Math.max(0, Math.round((Date.now() - sessionStart.current) / 60000)),
     }),
     [model, diversity, unread],
   )

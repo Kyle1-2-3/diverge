@@ -37,6 +37,26 @@ export const ads: Ad[] = [
     cta: 'Get yours',
   },
   {
+    id: 'ad4',
+    brand: 'HaulHub',
+    handle: 'haulhub',
+    tagline: 'New drops daily',
+    caption:
+      '2,000 new styles added TODAY 🛍️ if your fit isn’t from this week, is it even a fit? free shipping ends tonight ⏰',
+    image: photo('divadhaul'),
+    cta: 'Shop the haul',
+  },
+  {
+    id: 'ad5',
+    brand: 'BingeBox',
+    handle: 'bingebox',
+    tagline: 'Season 4 just dropped',
+    caption:
+      'all 10 episodes. right now. you weren’t doing anything tomorrow anyway 📺 first month free.',
+    image: photo('divadbinge'),
+    cta: 'Start watching',
+  },
+  {
     id: 'ad3',
     brand: 'LumaPhone',
     handle: 'lumaphone',

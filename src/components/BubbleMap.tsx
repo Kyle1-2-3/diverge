@@ -1,26 +1,38 @@
 import { useMemo, useState } from 'react'
+import type { GroupId } from '../types'
 import { getBubbleStats } from '../lib/feed'
 import { useInteractions } from '../state/interactions'
 
 // ---------------------------------------------------------------------------
-// The Bubble Map: your media world drawn as a tiny galaxy. You sit in the
-// middle; the six topic buckets orbit you. Topics you engage with grow and
-// pull closer, untouched ones drift to the edge, and the dashed ring marks
-// the boundary of "your bubble" (it widens with your diversity score).
-// Everything animates, so liking a post on the Home tab literally moves
-// this map. Tap any bubble for its numbers.
+// The Interest Map's galaxy: you in the middle, the eight topic worlds
+// orbiting you. Groups you engage with grow and pull closer, untouched ones
+// drift outward, and the dashed ring marks the edge of your current bubble.
+// Tap any bubble for its numbers. Neutral by design: it describes what
+// shaped your feed — it never grades you.
 // ---------------------------------------------------------------------------
 
-// One fixed slot per bucket, spaced 60° apart. The hue order around the
-// circle was chosen so no two colorblind-confusable hues sit next to each
-// other (validated: pink→blue→orange→purple→teal→amber all pass CVD checks).
-const SLOTS: { group: string; short: string; color: string }[] = [
-  { group: 'Entertainment', short: 'Entertainment', color: '#ec4899' },
-  { group: 'News', short: 'News', color: '#3b82f6' },
-  { group: 'Sports', short: 'Sports', color: '#f97316' },
-  { group: 'Culture', short: 'Culture', color: '#a855f7' },
-  { group: 'Education', short: 'Education', color: '#14b8a6' },
-  { group: 'Opposing Views', short: 'New views', color: '#f59e0b' },
+/** Short labels that fit the map. */
+const SHORT: Record<GroupId, string> = {
+  life: 'Friends',
+  fashion: 'Fashion',
+  food: 'Food',
+  sports: 'Sports',
+  art: 'Art',
+  travel: 'Cities',
+  tech: 'Tech',
+  music: 'Music',
+}
+
+// Fixed slot order around the circle, chosen so neighboring hues differ.
+const ORDER: GroupId[] = [
+  'fashion',
+  'sports',
+  'food',
+  'tech',
+  'life',
+  'art',
+  'music',
+  'travel',
 ]
 
 // SVG geometry constants (viewBox coordinates).
@@ -36,7 +48,7 @@ interface BubbleMapProps {
 
 export default function BubbleMap({ score }: BubbleMapProps) {
   const { liked, saved, comments } = useInteractions()
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelected] = useState<GroupId | null>(null)
 
   // Union of every post id the user has touched in any way.
   const engagedIds = useMemo(() => {
@@ -48,48 +60,38 @@ export default function BubbleMap({ score }: BubbleMapProps) {
   }, [liked, saved, comments])
 
   const stats = useMemo(() => getBubbleStats(engagedIds), [engagedIds])
-
-  // The dashed boundary of "your bubble" widens as your diversity score
-  // rises — a bolder intention literally makes your world bigger.
   const ringR = 46 + score * 0.5
-
   const maxW = Math.max(...stats.map((s) => s.weight), 1)
 
-  // Turn each bucket's weight into a position + size: heavier topics are
-  // bigger and orbit closer to you; ignored ones shrink toward the edge.
-  const bubbles = SLOTS.map((slot, i) => {
-    const stat = stats.find((s) => s.group === slot.group)!
+  const bubbles = ORDER.map((group, i) => {
+    const stat = stats.find((s) => s.group === group)!
     const rel = stat.weight / maxW
-    const r = 15 + rel * 13 // 15..28
-    const dist = 106 - rel * 44 // 62..106
-    const angle = ((-90 + i * 60) * Math.PI) / 180
+    const r = 13 + rel * 9 // 13..22
+    const dist = 108 - rel * 42 // 66..108
+    const angle = ((-90 + i * 45) * Math.PI) / 180
     const x = CX + dist * Math.cos(angle)
     const y = CY + dist * Math.sin(angle)
-    const inBubble = dist <= ringR
-    return { ...slot, ...stat, r, x, y, inBubble, upper: Math.sin(angle) < 0 }
+    return {
+      ...stat,
+      r,
+      x,
+      y,
+      inBubble: dist <= ringR,
+      upper: Math.sin(angle) < -0.01,
+    }
   })
 
   const sel = bubbles.find((b) => b.group === selected)
 
   return (
     <div className="border-2 border-black bg-white shadow-hard">
-      <div className="border-b-2 border-black px-4 py-3">
-        <h3 className="font-display text-sm font-bold uppercase tracking-tight text-black">
-          Your bubble map
-        </h3>
-        <p className="mt-0.5 text-[11px] leading-snug text-muted">
-          Topics you touch grow and pull closer. The dashed line is the edge
-          of your bubble.
-        </p>
-      </div>
-
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="block w-full"
         role="img"
-        aria-label="Map of your topic bubble: six topics orbiting you, sized by how much you engage with them"
+        aria-label="Map of your interests: eight topic worlds orbiting you, sized by how much you engage with them"
       >
-        {/* Boundary of your bubble — widens with your diversity score. */}
+        {/* Edge of your current bubble — widens as your mix widens. */}
         <circle
           cx={CX}
           cy={CY}
@@ -100,7 +102,7 @@ export default function BubbleMap({ score }: BubbleMapProps) {
           strokeDasharray="6 5"
           style={{ transition: 'r 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }}
         />
-        {/* Threads from you to every topic, under the bubbles. */}
+
         {bubbles.map((b) => (
           <line
             key={`l-${b.group}`}
@@ -110,7 +112,7 @@ export default function BubbleMap({ score }: BubbleMapProps) {
             y2={b.y}
             stroke="#000"
             strokeWidth="1.5"
-            opacity="0.25"
+            opacity="0.22"
             style={{
               transition: 'x2 0.6s, y2 0.6s',
               transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -118,7 +120,6 @@ export default function BubbleMap({ score }: BubbleMapProps) {
           />
         ))}
 
-        {/* The six topic bubbles. */}
         {bubbles.map((b) => {
           const isSel = selected === b.group
           return (
@@ -131,8 +132,7 @@ export default function BubbleMap({ score }: BubbleMapProps) {
               }}
               onClick={() => setSelected(isSel ? null : b.group)}
             >
-              {/* Oversized invisible hit target so small bubbles stay tappable. */}
-              <circle r={Math.max(b.r, 22)} fill="transparent" />
+              <circle r={Math.max(b.r, 20)} fill="transparent" />
               <circle
                 r={b.r}
                 fill={b.color}
@@ -141,21 +141,21 @@ export default function BubbleMap({ score }: BubbleMapProps) {
                 style={{ transition: 'r 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }}
               />
               <text
-                y={b.upper ? -(b.r + 7) : b.r + 13}
+                y={b.upper ? -(b.r + 6) : b.r + 12}
                 textAnchor="middle"
                 className="font-mono"
-                fontSize="9"
+                fontSize="8.5"
                 fontWeight="700"
                 fill="#000"
               >
-                {b.short.toUpperCase()}
+                {SHORT[b.group].toUpperCase()}
               </text>
             </g>
           )
         })}
 
         {/* You, at the center of it all. */}
-        <circle cx={CX} cy={CY} r="17" fill="#2b3bff" stroke="#000" strokeWidth="2" />
+        <circle cx={CX} cy={CY} r="16" fill="#2b3bff" stroke="#000" strokeWidth="2" />
         <text
           x={CX}
           y={CY + 3}
@@ -179,21 +179,21 @@ export default function BubbleMap({ score }: BubbleMapProps) {
               style={{ background: sel.color }}
             />
             <p className="flex-1 text-[11px] leading-snug text-black">
-              <span className="font-bold">{sel.group}</span> —{' '}
-              {sel.feedCount} post{sel.feedCount === 1 ? '' : 's'} in your
-              feed · {sel.engaged} you engaged with
+              <span className="font-bold">{sel.label}</span> —{' '}
+              {sel.feedCount} post{sel.feedCount === 1 ? '' : 's'} around ·{' '}
+              {sel.engaged} you engaged with
             </p>
             <span
               className={`shrink-0 border-2 border-black px-1.5 py-0.5 font-display text-[9px] font-bold uppercase tracking-tight ${
                 sel.inBubble ? 'bg-black text-white' : 'bg-white text-black'
               }`}
             >
-              {sel.inBubble ? 'In bubble' : 'Beyond'}
+              {sel.inBubble ? 'Close to you' : 'Further out'}
             </span>
           </div>
         ) : (
           <p className="text-[11px] text-muted">
-            Tap a topic to see how it fits your bubble.
+            Tap a world to see how it fits your feed.
           </p>
         )}
       </div>

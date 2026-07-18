@@ -1,12 +1,14 @@
 import { useRef, useState } from 'react'
-import type { Post, PostFlip } from '../types'
-import { categoryMeta } from '../data/categories'
+import type { Post } from '../types'
+import { topicMeta } from '../data/topics'
 import { useInteractions } from '../state/interactions'
 import { useModel } from '../state/model'
+import { usePrefs } from '../state/prefs'
 import { compact } from '../lib/format'
 import SmartImage from './SmartImage'
 import Avatar from './Avatar'
 import CommentsSheet from './CommentsSheet'
+import PerspectivePathSheet, { isBehindThe } from './PerspectivePathSheet'
 import {
   Heart,
   HeartFilled,
@@ -20,15 +22,17 @@ import {
 
 interface PostCardProps {
   post: Post
+  /** Specific, generated explanation for why this post is here. */
+  reason?: string
 }
 
 /**
- * An immersive, Instagram-style post. The "diverge" mechanic (why am I seeing
- * this) is hidden inside the "..." menu — discoverable, never preachy.
- * Likes / saves / comments live in the shared interactions store, so they
- * survive tab switches and page refreshes.
+ * An immersive, Instagram-style post. Feedback controls live in the "..."
+ * menu and genuinely steer later recommendations; Perspective Paths sit
+ * quietly under captions that earn them. Under the attention model most of
+ * this transparency is stripped away — that contrast is the experiment.
  */
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, reason }: PostCardProps) {
   const {
     liked,
     saved,
@@ -41,24 +45,29 @@ export default function PostCard({ post }: PostCardProps) {
     showToast,
   } = useInteractions()
   const { model } = useModel()
+  const { adjustTopic, hideCreator, unhideCreator, updateSession } = usePrefs()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [flipped, setFlipped] = useState(false) // showing the opposite take?
   const [showWhy, setShowWhy] = useState(false)
   const [showComments, setShowComments] = useState(false)
+  const [showPaths, setShowPaths] = useState(false)
   const [burst, setBurst] = useState(false) // double-tap heart animation
   const lastTap = useRef(0)
-  const meta = categoryMeta[post.category]
+  const topic = topicMeta[post.primaryTopic]
 
   // The attention model treats "why am I seeing this" as a legal obligation,
   // not a feature — so its answer says nothing.
   const whyText =
     model === 'attention'
       ? 'Our systems predicted this content would keep you engaged. Ad relevance may also have played a role. That’s all we can share.'
-      : post.whyReason
+      : (reason ?? 'This matches topics you follow.')
 
   const isLiked = liked.has(post.id)
   const isSaved = saved.has(post.id)
   const commentCount = post.comments + (comments[post.id]?.length ?? 0)
+
+  /** Every explicit feedback action counts as a "choice" in the session log. */
+  const trackChoice = () =>
+    updateSession(model, (s) => ({ ...s, choices: s.choices + 1 }))
 
   const likeWithBurst = () => {
     like(post.id)
@@ -73,8 +82,11 @@ export default function PostCard({ post }: PostCardProps) {
     lastTap.current = now
   }
 
+  const closeMenu = () => setMenuOpen(false)
+
   const notInterested = () => {
-    setMenuOpen(false)
+    closeMenu()
+    trackChoice()
     hidePost(post.id)
     showToast({
       message: 'Post hidden',
@@ -83,20 +95,55 @@ export default function PostCard({ post }: PostCardProps) {
     })
   }
 
-  // The normal face of the card. Kept as a fragment so flippable posts can
-  // mount it as the front of a 3D flip while plain posts render it directly.
-  const front = (
-    <>
-      {/* Outside-your-bubble banner — makes the diverge mechanic felt in-feed,
-          not just in the recap. Accent = a signal from outside your bubble. */}
-      {post.isOutsideBubble && model !== 'attention' && (
-        <div className="flex items-center gap-2 border-b-2 border-black bg-brand px-3.5 py-1.5 text-white">
-          <span className="font-mono text-[11px] font-bold uppercase tracking-widest">
-            ↯ Outside your usual
-          </span>
-        </div>
-      )}
+  const moreLikeThis = () => {
+    closeMenu()
+    trackChoice()
+    adjustTopic(post.primaryTopic, 'more')
+    showToast({
+      message: `More ${topic.label.toLowerCase()} coming up`,
+      actionLabel: 'Undo',
+      onAction: () => adjustTopic(post.primaryTopic, null),
+    })
+  }
 
+  const lessLikeThis = () => {
+    closeMenu()
+    trackChoice()
+    adjustTopic(post.primaryTopic, 'less')
+    showToast({
+      message: `Less ${topic.label.toLowerCase()} from now on`,
+      actionLabel: 'Undo',
+      onAction: () => adjustTopic(post.primaryTopic, null),
+    })
+  }
+
+  const pauseTopic = () => {
+    closeMenu()
+    trackChoice()
+    adjustTopic(post.primaryTopic, 'paused')
+    showToast({
+      message: `${topic.label} paused — resume it in your Interest Map`,
+      actionLabel: 'Undo',
+      onAction: () => adjustTopic(post.primaryTopic, null),
+    })
+  }
+
+  const hideThisCreator = () => {
+    closeMenu()
+    trackChoice()
+    hideCreator(post.handle)
+    showToast({
+      message: `You won't see ${post.handle} anymore`,
+      actionLabel: 'Undo',
+      onAction: () => unhideCreator(post.handle),
+    })
+  }
+
+  const menuItem =
+    'flex w-full items-center gap-2 border-t-2 border-black px-4 py-2.5 text-left text-sm text-black hover:bg-gray-50'
+
+  return (
+    <article className="animate-fade-up bg-white">
       {/* Header */}
       <div className="flex items-center gap-2.5 px-3.5 py-2.5">
         <Avatar name={post.handle} className="h-9 w-9 text-xs" />
@@ -120,40 +167,28 @@ export default function PostCard({ post }: PostCardProps) {
         </button>
       </div>
 
-      {/* "..." menu. In the attention model, transparency is buried at the
-          bottom in small print; elsewhere it's the first thing you see. */}
+      {/* "..." menu. Attention: minimal, transparency buried in small print.
+          Elsewhere: real controls that genuinely steer the feed. */}
       {menuOpen && (
         <div className="animate-pop-in mx-3.5 mb-2 border-2 border-black bg-white shadow-hard">
           {model === 'attention' ? (
             <>
-              <button
-                onClick={notInterested}
-                className="flex w-full items-center gap-2 px-4 py-3 text-left font-display text-sm font-bold text-black hover:bg-brand-soft"
-              >
+              <button onClick={notInterested} className={`${menuItem} border-t-0 font-display font-bold`}>
                 See fewer posts like this
               </button>
               <button
                 onClick={() => {
-                  setMenuOpen(false)
+                  closeMenu()
                   showToast({ message: 'Reported. Our systems will take a look.' })
                 }}
-                className="flex w-full items-center gap-2 border-t-2 border-black px-4 py-3 text-left text-sm text-black hover:bg-gray-50"
+                className={menuItem}
               >
                 Report
               </button>
               <button
                 onClick={() => {
-                  setMenuOpen(false)
-                  showToast({ message: 'Account info is available on their profile.' })
-                }}
-                className="flex w-full items-center gap-2 border-t-2 border-black px-4 py-3 text-left text-sm text-black hover:bg-gray-50"
-              >
-                About this account
-              </button>
-              <button
-                onClick={() => {
                   setShowWhy(true)
-                  setMenuOpen(false)
+                  closeMenu()
                 }}
                 className="flex w-full items-center gap-2 border-t-2 border-black px-4 py-2 text-left font-mono text-[11px] text-muted hover:bg-gray-50"
               >
@@ -165,16 +200,25 @@ export default function PostCard({ post }: PostCardProps) {
               <button
                 onClick={() => {
                   setShowWhy(true)
-                  setMenuOpen(false)
+                  closeMenu()
                 }}
-                className="flex w-full items-center gap-2 px-4 py-3 text-left font-display text-sm font-bold text-black hover:bg-brand-soft"
+                className={`${menuItem} border-t-0 font-display font-bold hover:bg-brand-soft`}
               >
                 ? Why am I seeing this?
               </button>
-              <button
-                onClick={notInterested}
-                className="flex w-full items-center gap-2 border-t-2 border-black px-4 py-3 text-left text-sm text-muted hover:bg-gray-50"
-              >
+              <button onClick={moreLikeThis} className={menuItem}>
+                Show me more like this
+              </button>
+              <button onClick={lessLikeThis} className={menuItem}>
+                Show me less like this
+              </button>
+              <button onClick={pauseTopic} className={menuItem}>
+                Pause “{topic.label}”
+              </button>
+              <button onClick={hideThisCreator} className={menuItem}>
+                Hide {post.handle}
+              </button>
+              <button onClick={notInterested} className={`${menuItem} text-muted`}>
                 Not interested
               </button>
             </>
@@ -192,28 +236,14 @@ export default function PostCard({ post }: PostCardProps) {
           alt={post.caption}
           className="h-full w-full"
         />
-        {/* Double-tap burst heart */}
         {burst && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <HeartFilled className="h-24 w-24 animate-pop-in text-white drop-shadow-lg" />
           </div>
         )}
-        {/* Category chip — text only, hard-bordered, lower-left */}
         <span className="absolute bottom-2.5 left-2.5 border-2 border-black bg-white px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-tight text-black">
-          {meta.label}
+          {topic.label}
         </span>
-        {/* Flip-the-perspective entry point — a public-interest feature. */}
-        {post.flip && model === 'public' && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setFlipped(true)
-            }}
-            className="absolute right-2.5 top-2.5 border-2 border-black bg-brand px-2 py-1 font-mono text-[11px] font-bold uppercase tracking-tight text-white shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-          >
-            ⇄ Flip side
-          </button>
-        )}
       </div>
 
       {/* Actions */}
@@ -266,147 +296,39 @@ export default function PostCard({ post }: PostCardProps) {
         <p className="mt-1 text-sm leading-snug text-black">
           <span className="font-bold">{post.handle}</span> {post.caption}
         </p>
-        {/* Public model: controversial stories carry their other outlets. */}
-        {model === 'public' && post.sources && (
-          <div className="mt-2 border-2 border-black bg-brand-soft px-2.5 py-1.5">
-            <p className="font-mono text-[10px] uppercase tracking-tight text-black">
-              Also covered by: {post.sources.join(' · ')}
-            </p>
-          </div>
+
+        {/* Perspective Paths — quiet, and only where they genuinely help. */}
+        {post.paths && post.paths.length > 0 && model !== 'attention' && (
+          <button
+            onClick={() => setShowPaths(true)}
+            className="mt-2 inline-flex items-center gap-1.5 border-2 border-black bg-white px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-tight text-black shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          >
+            {isBehindThe(post) ? '◇ Behind this' : '◇ See another angle'}
+          </button>
         )}
+
         <button
           onClick={() => setShowComments(true)}
-          className="mt-1.5 text-sm text-muted"
+          className="mt-1.5 block text-sm text-muted"
         >
           View all {compact(commentCount)} comments
         </button>
-        {/* Paid & public models: transparency lives on the post itself. */}
-        {model !== 'attention' && (
-          <button
-            onClick={() => setShowWhy(true)}
-            className="mt-1 block font-mono text-[11px] font-bold uppercase tracking-tight text-brand"
-          >
-            ? Why this post
-          </button>
-        )}
         <p className="mt-1 font-display text-[11px] uppercase tracking-wide text-muted">
           {post.timeAgo} ago
         </p>
       </div>
-    </>
-  )
 
-  return (
-    <article className="animate-fade-up bg-white">
-      {post.flip ? (
-        // Flippable card: front = the post, back = the opposite take. The
-        // overlay sheets below stay outside this transformed subtree.
-        <div className="flip-scene">
-          <div className={`flip-inner ${flipped ? 'flipped' : ''}`}>
-            <div className="flip-face bg-white">{front}</div>
-            <div className="flip-face flip-face-back bg-white">
-              <FlipSide
-                flip={post.flip}
-                category={meta.label}
-                onFlipBack={() => setFlipped(false)}
-              />
-            </div>
-          </div>
-        </div>
-      ) : (
-        front
-      )}
-
-      {/* Why-am-I-seeing-this sheet */}
+      {/* Sheets */}
       {showWhy && (
         <WhySheet reason={whyText} onClose={() => setShowWhy(false)} />
       )}
-
-      {/* Comments sheet */}
       {showComments && (
         <CommentsSheet post={post} onClose={() => setShowComments(false)} />
       )}
+      {showPaths && (
+        <PerspectivePathSheet post={post} onClose={() => setShowPaths(false)} />
+      )}
     </article>
-  )
-}
-
-/**
- * The back of a flippable card: the same topic argued from the other side.
- * Deliberately simpler than the front (no like/save row) — you're peeking at
- * a perspective, not being asked to engage with it.
- */
-function FlipSide({
-  flip,
-  category,
-  onFlipBack,
-}: {
-  flip: PostFlip
-  category: string
-  onFlipBack: () => void
-}) {
-  return (
-    <div className="flex h-full flex-col">
-      {/* Banner doubles as the flip-back control */}
-      <button
-        onClick={onFlipBack}
-        className="flex w-full items-center justify-between border-b-2 border-black bg-black px-3.5 py-1.5 text-left text-white"
-      >
-        <span className="font-mono text-[11px] font-bold uppercase tracking-widest">
-          ⇄ The flip side
-        </span>
-        <span className="font-mono text-[11px] uppercase tracking-tight text-white/80">
-          flip back
-        </span>
-      </button>
-
-      {/* Header */}
-      <div className="flex items-center gap-2.5 px-3.5 py-2.5">
-        <Avatar name={flip.handle} className="h-9 w-9 text-xs" />
-        <div className="flex-1 leading-tight">
-          <div className="flex items-center gap-1">
-            <span className="font-display text-sm font-bold text-black">
-              {flip.handle}
-            </span>
-            {flip.verified && <Verified className="h-3.5 w-3.5" />}
-          </div>
-          {flip.location && (
-            <span className="text-[11px] text-muted">{flip.location}</span>
-          )}
-        </div>
-      </div>
-
-      {/* Photo */}
-      <div className="relative aspect-[4/5] w-full select-none border-y-2 border-black">
-        <SmartImage
-          src={flip.image}
-          alt={flip.caption}
-          className="h-full w-full"
-        />
-        <span className="absolute bottom-2.5 left-2.5 border-2 border-black bg-white px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-tight text-black">
-          {category}
-        </span>
-        <button
-          onClick={onFlipBack}
-          className="absolute right-2.5 top-2.5 border-2 border-black bg-black px-2 py-1 font-mono text-[11px] font-bold uppercase tracking-tight text-white shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-        >
-          ⇄ Flip back
-        </button>
-      </div>
-
-      {/* Caption + the one-line reason this exists */}
-      <div className="px-3.5 pb-4 pt-3">
-        <p className="font-display text-sm font-bold text-black">
-          {compact(flip.likes)} likes
-        </p>
-        <p className="mt-1 text-sm leading-snug text-black">
-          <span className="font-bold">{flip.handle}</span> {flip.caption}
-        </p>
-        <p className="mt-2 border-l-4 border-brand pl-2 text-[11px] leading-snug text-muted">
-          Diverge pairs takes on the same topic, so one side never becomes
-          your whole feed.
-        </p>
-      </div>
-    </div>
   )
 }
 

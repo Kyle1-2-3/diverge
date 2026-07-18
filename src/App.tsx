@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { IntentionId } from './types'
 import type { BusinessModel } from './data/models'
-import { InteractionsProvider } from './state/interactions'
+import { InteractionsProvider, useInteractions } from './state/interactions'
 import { ModelProvider, useModel } from './state/model'
+import { PrefsProvider, usePrefs } from './state/prefs'
 import PhoneFrame from './components/PhoneFrame'
 import ToastHost from './components/Toast'
 import LandingScreen from './components/LandingScreen'
@@ -17,13 +18,15 @@ import AboutModal from './components/AboutModal'
 import BottomNav, { type Tab } from './components/BottomNav'
 
 // Three layers of state:
-//  - `phase`: opening → choose a business model → (mood, subscription only) → app
+//  - `phase`: opening → choose a business model → (vibe, subscription only) → app
 //  - `tab`: which bottom-nav tab is showing once we're in the app
 //  - the business model itself lives in ModelProvider and reshapes everything
 type Phase = 'landing' | 'model' | 'mood' | 'app'
 
 function AppInner() {
   const { model, setModel } = useModel()
+  const { rememberedIntention, resetSession, seen, markSeen } = usePrefs()
+  const { showToast } = useInteractions()
   const [phase, setPhase] = useState<Phase>('landing')
   const [tab, setTab] = useState<Tab>('home')
   const [intention, setIntention] = useState<IntentionId>('explore')
@@ -38,12 +41,28 @@ function AppInner() {
 
   // Entering a model is itself part of the experiment:
   //  - attention drops you straight into the feed (no friction, start scrolling)
-  //  - subscription asks for your intention first (your time, your terms)
-  //  - public goes to the feed, which opens by explaining itself
+  //  - subscription asks for your intention first (your time, your terms) —
+  //    unless you asked it to remember your pick
+  //  - public goes straight in; its feed explains itself at the top
   const enterModel = (m: BusinessModel) => {
+    const switching = phase === 'app'
     setModel(m)
     setTab('home')
-    setPhase(m === 'subscription' ? 'mood' : 'app')
+    resetSession(m)
+    if (switching && !seen['model-switch']) {
+      showToast({
+        message: 'Different money, different app — watch the feed change.',
+      })
+      markSeen('model-switch')
+    }
+    if (m === 'subscription' && !rememberedIntention) {
+      setPhase('mood')
+    } else {
+      if (m === 'subscription' && rememberedIntention) {
+        setIntention(rememberedIntention)
+      }
+      setPhase('app')
+    }
   }
 
   const enterApp = (id: IntentionId) => {
@@ -64,7 +83,7 @@ function AppInner() {
       {phase === 'mood' && (
         <IntentionalMode
           onConfirm={enterApp}
-          onSkip={() => enterApp('trends')}
+          onSkip={() => enterApp('explore')}
         />
       )}
 
@@ -83,18 +102,16 @@ function AppInner() {
               {tab === 'home' && (
                 <Feed
                   intentionId={intention}
-                  onReflect={() => setReflectOpen(true)}
-                  onExplore={() => setTab('explore')}
                   onChangeMood={() => setPhase('mood')}
                 />
               )}
               {tab === 'explore' && <ExploreScreen />}
               {tab === 'you' && (
                 <ProfileScreen
-                  intentionId={intention}
                   onReflect={() => setReflectOpen(true)}
                   onAbout={() => setAboutOpen(true)}
                   onChangeMood={() => setPhase('mood')}
+                  onSwitchModel={enterModel}
                 />
               )}
             </div>
@@ -117,11 +134,13 @@ function AppInner() {
 function App() {
   return (
     <ModelProvider>
-      <InteractionsProvider>
-        <PhoneFrame>
-          <AppInner />
-        </PhoneFrame>
-      </InteractionsProvider>
+      <PrefsProvider>
+        <InteractionsProvider>
+          <PhoneFrame>
+            <AppInner />
+          </PhoneFrame>
+        </InteractionsProvider>
+      </PrefsProvider>
     </ModelProvider>
   )
 }

@@ -1,52 +1,56 @@
 import type { Intention } from '../types'
 
-// The five intentions shown on the "What do you want from your feed today?"
-// screen. Each one carries a confirmation message and a target diversity score
-// so the feed can visually respond to the choice.
+// The five session intentions. Each one genuinely changes the feed:
+// `mix` sets the familiar/adjacent/discovery balance for a chapter, and
+// `chapterSize` nudges how long a session naturally runs. Weights in
+// lib/recommend.ts read the id for tone/source matching.
 export const intentions: Intention[] = [
   {
     id: 'relax',
-    emoji: '🌿',
+    emoji: '🛋️',
     title: 'Relax',
-    subtitle: 'Calm, easy, low-pressure content',
-    message:
-      'Got it. Diverge will keep things light — but still slip in a couple of fresh voices so your downtime widens your world a little.',
-    targetScore: 52,
+    subtitle: 'Easy, familiar, no pressure',
+    message: 'Keeping it light — familiar things, calm pace.',
+    mix: { core: 0.85, adjacent: 0.1, discovery: 0.05 },
+    chapterSize: 12,
   },
   {
-    id: 'learn',
-    emoji: '💡',
-    title: 'Learn something new',
-    subtitle: 'Ideas, science, how things work',
-    message:
-      'Nice. Diverge will lean toward posts that teach you something, drawing from topics outside your usual scroll.',
-    targetScore: 74,
-  },
-  {
-    id: 'perspective',
-    emoji: '🔄',
-    title: 'Understand another perspective',
-    subtitle: 'Hear how others see the world',
-    message:
-      'Brave choice. Diverge will surface viewpoints you might normally skip — shaped by curiosity, not just what you agree with.',
-    targetScore: 88,
-  },
-  {
-    id: 'trends',
-    emoji: '🔥',
-    title: 'Catch up on trends',
-    subtitle: "What everyone's talking about",
-    message:
-      "Sure. Diverge will show you what's popular — and quietly balance it with a few things the trend machine would normally hide.",
-    targetScore: 46,
+    id: 'friends',
+    emoji: '💬',
+    title: 'Catch up',
+    subtitle: 'Friends first',
+    message: 'Friends first — everything recent from your people.',
+    mix: { core: 0.8, adjacent: 0.15, discovery: 0.05 },
+    chapterSize: 12,
   },
   {
     id: 'explore',
     emoji: '🧭',
-    title: 'Explore outside my bubble',
-    subtitle: 'Push me somewhere unexpected',
-    message:
-      'Love it. Diverge is built for exactly this. Your feed has been reshuffled to bring distant topics and opposing views to the front.',
-    targetScore: 94,
+    title: 'Explore',
+    subtitle: 'Wander a little further',
+    message: 'A few doors near your interests are open today.',
+    mix: { core: 0.55, adjacent: 0.3, discovery: 0.15 },
+    chapterSize: 16,
+  },
+  {
+    id: 'learn',
+    emoji: '📚',
+    title: 'Learn something',
+    subtitle: 'Interesting, not homework',
+    message: 'Leaning informative — still your interests, more depth.',
+    mix: { core: 0.65, adjacent: 0.25, discovery: 0.1 },
+    chapterSize: 14,
+  },
+  {
+    id: 'perspective',
+    emoji: '🔭',
+    title: 'Another angle',
+    subtitle: 'Same topics, more views',
+    message: 'Same topics you love — with more angles on them.',
+    mix: { core: 0.65, adjacent: 0.25, discovery: 0.1 },
+    chapterSize: 14,
   },
 ]
+
+export const intentionById = (id: Intention['id']) =>
+  intentions.find((i) => i.id === id) ?? intentions[2]

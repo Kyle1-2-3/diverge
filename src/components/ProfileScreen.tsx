@@ -1,20 +1,21 @@
 import { useState } from 'react'
-import type { IntentionId } from '../types'
+import type { BusinessModel } from '../data/models'
 import { currentUser } from '../data/user'
 import { posts } from '../data/posts'
-import { getRecap } from '../lib/feed'
 import { useInteractions } from '../state/interactions'
 import { useModel } from '../state/model'
-import DiversityScore from './DiversityScore'
+import { usePrefs } from '../state/prefs'
+import InterestMapScreen from './InterestMapScreen'
+import PlatformModelLab from './PlatformModelLab'
 import SmartImage from './SmartImage'
 import Avatar from './Avatar'
 import { Bookmark } from './Icons'
 
 interface ProfileScreenProps {
-  intentionId: IntentionId
   onReflect: () => void
   onAbout: () => void
   onChangeMood: () => void
+  onSwitchModel: (m: BusinessModel) => void
 }
 
 /**
@@ -22,28 +23,25 @@ interface ProfileScreenProps {
  *  - attention:    a creator dashboard. You are a channel; keep the numbers up.
  *  - subscription: usage insights. You are a customer; here's your time back.
  *  - public:       a perspective report. You are a citizen; here's your range.
+ * The Interest Map and the Platform Model Lab live here, behind one tap.
  */
 export default function ProfileScreen({
-  intentionId,
   onReflect,
   onAbout,
   onChangeMood,
+  onSwitchModel,
 }: ProfileScreenProps) {
   const { model, diversity, sessionMinutes } = useModel()
-  const recap = getRecap(intentionId)
+  const { sessions } = usePrefs()
   const u = currentUser
   const { saved, liked } = useInteractions()
   const [gridTab, setGridTab] = useState<'posts' | 'saved'>('posts')
+  const [mapOpen, setMapOpen] = useState(false)
+  const [labOpen, setLabOpen] = useState(false)
   const savedPosts = posts.filter((p) => saved.has(p.id))
   const publicScore = 40 + Math.round(diversity * 0.55)
-  // Headline follows the diversity dial, matching the score shown below it.
-  const publicHeadline =
-    publicScore >= 85
-      ? 'You went way past your bubble this week'
-      : publicScore >= 65
-        ? 'You stretched your feed nicely this week'
-        : 'A quiet week — room to roam next time'
   const minutes = sessionMinutes()
+  const session = sessions[model]
 
   return (
     <div className="bg-white pb-8">
@@ -88,7 +86,7 @@ export default function ProfileScreen({
             onClick={onChangeMood}
             className="mt-4 w-full border-2 border-black bg-white py-2 font-display text-sm font-bold uppercase tracking-tight text-black shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           >
-            Set today's mood
+            Set today's vibe
           </button>
         )}
       </div>
@@ -147,8 +145,11 @@ export default function ProfileScreen({
             <div className="mt-4 grid grid-cols-3 gap-2.5">
               {[
                 { value: `${minutes}m`, label: 'in app this session' },
-                { value: '1', label: 'feed finished' },
-                { value: '12', label: 'pings held for digest' },
+                { value: String(session?.posts ?? 0), label: 'posts seen' },
+                {
+                  value: String(session?.choices ?? 0),
+                  label: 'choices you made',
+                },
               ].map((s) => (
                 <div
                   key={s.label}
@@ -171,53 +172,91 @@ export default function ProfileScreen({
         </div>
       )}
 
-      {/* ---- PUBLIC: the weekly perspective report ----------------------- */}
+      {/* ---- PUBLIC: the perspective report ------------------------------ */}
       {model === 'public' && (
-        <>
-          <div className="mt-6 px-4">
-            <div className="border-2 border-black bg-brand p-5 text-white shadow-hard">
-              <p className="font-display text-[11px] font-bold uppercase tracking-widest text-white/80">
-                Weekly perspective report
-              </p>
-              <h2 className="mt-1 font-display text-xl font-bold uppercase leading-tight tracking-tight">
-                {publicHeadline}
-              </h2>
-              <div className="mt-4 grid grid-cols-3 gap-2.5">
-                {[
-                  { value: String(recap.topics), label: 'topics explored' },
-                  { value: String(recap.outside), label: 'views beyond your bubble' },
-                  { value: String(publicScore), label: 'diversity score' },
-                ].map((s) => (
-                  <div
-                    key={s.label}
-                    className="border-2 border-white bg-brand p-3 text-center"
-                  >
-                    <div className="font-mono text-3xl font-bold tabular-nums leading-none">
-                      {s.value}
-                    </div>
-                    <div className="mt-2 font-mono text-[10px] uppercase leading-tight tracking-tight text-white/90">
-                      {s.label}
-                    </div>
+        <div className="mt-6 px-4">
+          <div className="border-2 border-black bg-brand p-5 text-white shadow-hard">
+            <p className="font-display text-[11px] font-bold uppercase tracking-widest text-white/80">
+              Perspective report
+            </p>
+            <h2 className="mt-1 font-display text-xl font-bold uppercase leading-tight tracking-tight">
+              {((session?.adjacent ?? 0) + (session?.discovery ?? 0)) > 2
+                ? 'You wandered well this session'
+                : 'Room to roam — your call'}
+            </h2>
+            <div className="mt-4 grid grid-cols-3 gap-2.5">
+              {[
+                { value: String(session?.posts ?? 0), label: 'posts seen' },
+                {
+                  value: String(
+                    (session?.adjacent ?? 0) + (session?.discovery ?? 0),
+                  ),
+                  label: 'discoveries',
+                },
+                { value: String(publicScore), label: 'mix width' },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="border-2 border-white bg-brand p-3 text-center"
+                >
+                  <div className="font-mono text-3xl font-bold tabular-nums leading-none">
+                    {s.value}
                   </div>
-                ))}
-              </div>
-              <p className="mt-4 border-l-4 border-white pl-3 text-xs leading-relaxed text-white/90">
-                This replaces an engagement report. We measure what you heard,
-                not how long we held you.
-              </p>
+                  <div className="mt-2 font-mono text-[10px] uppercase leading-tight tracking-tight text-white/90">
+                    {s.label}
+                  </div>
+                </div>
+              ))}
             </div>
+            <p className="mt-4 border-l-4 border-white pl-3 text-xs leading-relaxed text-white/90">
+              This describes what you experienced — it doesn't grade you.
+              There is no perfect mix.
+            </p>
           </div>
-
-          {/* Coverage breakdown — where your bubble is thin */}
-          <div className="mt-4 px-4">
-            <DiversityScore score={publicScore} bars={recap.bars} />
-          </div>
-        </>
+        </div>
       )}
 
-      {/* Reflect entry — for the models that want you to leave with a thought */}
-      {model !== 'attention' && (
-        <div className="mt-4 px-4">
+      {/* ---- Your feed: the map and the lab ------------------------------ */}
+      <div className="mt-4 flex flex-col gap-3 px-4">
+        {model !== 'attention' && (
+          <button
+            onClick={() => setMapOpen(true)}
+            className="flex w-full items-center gap-3 border-2 border-black bg-white p-4 text-left shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          >
+            <span className="flex h-11 w-11 items-center justify-center border-2 border-black bg-brand-soft font-mono text-lg font-bold text-black">
+              ◉
+            </span>
+            <span className="flex-1">
+              <span className="block font-display text-sm font-bold uppercase tracking-tight text-black">
+                Interest map
+              </span>
+              <span className="block text-xs text-muted">
+                What's shaped your feed — and the dials to tune it
+              </span>
+            </span>
+            <span className="font-display text-lg font-bold text-black">→</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => setLabOpen(true)}
+          className="flex w-full items-center gap-3 border-2 border-black bg-white p-4 text-left shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+        >
+          <span className="flex h-11 w-11 items-center justify-center border-2 border-black bg-black font-mono text-lg font-bold text-white">
+            ⚗
+          </span>
+          <span className="flex-1">
+            <span className="block font-display text-sm font-bold uppercase tracking-tight text-black">
+              Platform Model Lab
+            </span>
+            <span className="block text-xs text-muted">
+              Compare how each business model treated you
+            </span>
+          </span>
+          <span className="font-display text-lg font-bold text-black">→</span>
+        </button>
+
+        {model !== 'attention' && (
           <button
             onClick={onReflect}
             className="flex w-full items-center gap-3 border-2 border-black bg-white p-4 text-left shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
@@ -235,20 +274,17 @@ export default function ProfileScreen({
             </span>
             <span className="font-display text-lg font-bold text-black">→</span>
           </button>
-        </div>
-      )}
+        )}
 
-      {/* Attention model: even your own profile nudges you to feed the feed. */}
-      {model === 'attention' && (
-        <div className="mt-4 px-4">
+        {model === 'attention' && (
           <div className="flex items-center justify-between border-2 border-black bg-brand-soft px-4 py-3">
             <p className="text-xs font-bold text-black">
-            You liked {liked.size} posts today — your taste profile is
+              You liked {liked.size} posts today — your taste profile is
               {liked.size > 3 ? ' excellent' : ' still warming up'}.
             </p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Grid tabs — your posts vs. everything you've bookmarked. */}
       <div className="mt-6 flex border-t-4 border-black">
@@ -296,6 +332,15 @@ export default function ProfileScreen({
             Tap the bookmark on any post and it'll show up here.
           </p>
         </div>
+      )}
+
+      {/* Overlays */}
+      {mapOpen && <InterestMapScreen onClose={() => setMapOpen(false)} />}
+      {labOpen && (
+        <PlatformModelLab
+          onClose={() => setLabOpen(false)}
+          onSwitchModel={onSwitchModel}
+        />
       )}
     </div>
   )

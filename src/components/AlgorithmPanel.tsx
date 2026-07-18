@@ -1,4 +1,3 @@
-import { posts } from '../data/posts'
 import { useModel } from '../state/model'
 
 interface AlgorithmPanelProps {
@@ -6,25 +5,25 @@ interface AlgorithmPanelProps {
 }
 
 /**
- * The public-interest model's radical move: the entire ranking algorithm,
- * written in plain language, with the one tunable parameter handed to the
- * user as a physical dial. There is nothing behind the curtain — this panel
- * IS the algorithm.
+ * The public-interest model's radical move: the entire ranking recipe,
+ * written in plain language, with the one big parameter handed to the user
+ * as a dial. There is nothing behind the curtain — this panel IS the
+ * algorithm (see lib/recommend.ts, which uses exactly these rules).
  */
 export default function AlgorithmPanel({ onClose }: AlgorithmPanelProps) {
   const { diversity, setDiversity } = useModel()
 
-  const inside = posts.filter((p) => !p.isOutsideBubble).length
-  const outsideTotal = posts.filter((p) => p.isOutsideBubble).length
-  const outsideShown = Math.round((outsideTotal * diversity) / 100)
-  const total = inside + outsideShown
+  // Mirrors mixFor() in lib/recommend.ts for the public model.
+  const adj = Math.round((0.1 + (diversity / 100) * 0.3) * 100)
+  const far = Math.round((0.05 + (diversity / 100) * 0.15) * 100)
+  const core = Math.max(30, 100 - adj - far)
 
   const rules = [
-    `The feed is finite: ${total} posts today, then it ends.`,
-    `${outsideShown} of them come from outside your bubble — you set this below.`,
-    'Outside views are spread evenly through the feed, never buried at the end.',
-    'Opinion posts carry their strongest counter-argument on the back.',
-    'Nothing is ranked by engagement. Likes never decide what you see.',
+    'The feed arrives in chapters, then asks — nothing auto-loads.',
+    `Today's target mix: ${core}% familiar · ${adj}% adjacent · ${far}% wider. Your dial below sets it.`,
+    '“Adjacent” means one believable step from your interests — baseball to stadium design, never baseball to celebrity gossip.',
+    'Your “more / less / pause” choices outrank everything else in ranking.',
+    'Likes and watch-time never decide what you see here.',
   ]
 
   return (
@@ -55,7 +54,6 @@ export default function AlgorithmPanel({ onClose }: AlgorithmPanelProps) {
           </button>
         </div>
 
-        {/* The five rules — numbered, blunt, complete. */}
         <ol className="mt-5 flex flex-col gap-2.5">
           {rules.map((rule, i) => (
             <li key={i} className="flex gap-3 border-2 border-black p-3">
@@ -67,11 +65,10 @@ export default function AlgorithmPanel({ onClose }: AlgorithmPanelProps) {
           ))}
         </ol>
 
-        {/* The dial — the user owns the one parameter that matters. */}
         <div className="mt-5 border-2 border-black bg-brand-soft p-4">
           <div className="flex items-baseline justify-between">
             <p className="font-display text-sm font-bold uppercase tracking-tight text-black">
-              Your diversity dial
+              Your discovery dial
             </p>
             <p className="font-mono text-2xl font-bold tabular-nums text-brand">
               {diversity}%
@@ -85,15 +82,14 @@ export default function AlgorithmPanel({ onClose }: AlgorithmPanelProps) {
             value={diversity}
             onChange={(e) => setDiversity(Number(e.target.value))}
             className="mt-3 w-full accent-brand"
-            aria-label="How much of your feed comes from outside your bubble"
+            aria-label="How much of your feed goes beyond your usual topics"
           />
           <div className="mt-1 flex justify-between font-mono text-[10px] uppercase tracking-tight text-muted">
             <span>Comfort zone</span>
-            <span>Full exposure</span>
+            <span>Wide open</span>
           </div>
           <p className="mt-3 border-l-4 border-black pl-2.5 text-xs leading-snug text-black">
-            Right now: {outsideShown} of {total} posts come from beyond your
-            bubble. Change it and the feed re-ranks instantly.
+            Change it and the next chapter re-ranks instantly.
           </p>
         </div>
 
