@@ -26,15 +26,13 @@ export default function SessionRecap({
   const mix = feedMixOf(shown, ctx.interests)
 
   return (
-    <div className="absolute inset-0 z-40 flex items-end bg-black/60" onClick={onDone}>
+    <div className="absolute inset-0 z-40 flex items-end bg-black/40" onClick={onDone}>
       <div
-        className="animate-fade-up no-scrollbar max-h-[90%] w-full overflow-y-auto border-t-4 border-black bg-white p-5 pb-8"
+        className="animate-fade-up no-scrollbar shadow-soft-lg max-h-[90%] w-full overflow-y-auto rounded-t-2xl bg-white p-5 pb-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="font-display text-[11px] font-bold uppercase tracking-widest text-brand">
-          Session closed
-        </p>
-        <h2 className="mt-1 font-display text-3xl font-bold uppercase leading-none tracking-tighter text-black">
+        <p className="text-xs font-semibold text-brand">Session closed</p>
+        <h2 className="mt-1 font-display text-3xl font-bold leading-[1.05] tracking-[-0.02em] text-ink">
           Time well
           <br />
           spent.
@@ -49,11 +47,14 @@ export default function SessionRecap({
               label: 'discoveries',
             },
           ].map((s) => (
-            <div key={s.label} className="border-2 border-black bg-white p-3 text-center">
-              <div className="font-mono text-2xl font-bold tabular-nums leading-none text-black">
+            <div
+              key={s.label}
+              className="rounded-lg border border-hairline bg-white p-3 text-center"
+            >
+              <div className="tnum text-2xl font-bold leading-none text-ink">
                 {s.value}
               </div>
-              <div className="mt-1.5 font-mono text-[9px] uppercase leading-tight tracking-tight text-muted">
+              <div className="mt-1.5 text-[10px] leading-tight text-faint">
                 {s.label}
               </div>
             </div>
@@ -61,8 +62,9 @@ export default function SessionRecap({
         </div>
 
         {feeling && (
-          <p className="mt-3 border-l-4 border-black pl-3 text-xs text-muted">
-            You called it: <span className="font-bold text-black">{feeling}</span>
+          <p className="mt-3 text-xs text-muted">
+            You called it:{' '}
+            <span className="font-semibold text-ink">{feeling}</span>
           </p>
         )}
 
@@ -72,7 +74,7 @@ export default function SessionRecap({
 
         <button
           onClick={onDone}
-          className="mt-5 w-full border-2 border-black bg-black py-3.5 font-display text-sm font-bold uppercase tracking-widest text-white shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"
+          className="mt-5 w-full rounded-full bg-brand py-3.5 font-display text-sm font-semibold text-white transition-transform active:scale-[0.97]"
         >
           See you when you're curious →
         </button>

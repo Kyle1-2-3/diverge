@@ -60,7 +60,10 @@ export default function StoryViewer({ initialId, onClose }: StoryViewerProps) {
       {/* Progress bars */}
       <div className="relative z-10 flex gap-1 px-3 pt-3">
         {viewable.map((s, i) => (
-          <div key={s.id} className="h-1 flex-1 overflow-hidden bg-white/30">
+          <div
+            key={s.id}
+            className="h-1 flex-1 overflow-hidden rounded-full bg-white/30"
+          >
             {i < index && <div className="h-full w-full bg-white" />}
             {i === index && (
               <div key={index} className="animate-story-bar h-full bg-white" />
@@ -72,20 +75,18 @@ export default function StoryViewer({ initialId, onClose }: StoryViewerProps) {
       {/* Header: who + when + close */}
       <div className="relative z-10 flex items-center gap-2.5 px-3.5 pt-3">
         <Avatar name={story.name} className="h-9 w-9 text-xs" />
-        <span className="font-display text-sm font-bold text-white">
-          {story.name}
-        </span>
-        <span className="font-mono text-[11px] text-white/70">
+        <span className="text-sm font-semibold text-white">{story.name}</span>
+        <span className="text-[11px] text-white/70">
           {TIMES[index % TIMES.length]}
         </span>
         {story.outside && (
-          <span className="border-2 border-black bg-brand px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-white">
-            outside your circle
+          <span className="rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold text-white">
+            Outside your circle
           </span>
         )}
         <button
           onClick={onClose}
-          className="ml-auto p-1 font-mono text-xl font-bold leading-none text-white"
+          className="ml-auto p-1 text-xl leading-none text-white"
           aria-label="Close story"
         >
           ✕

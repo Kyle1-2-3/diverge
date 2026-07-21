@@ -54,10 +54,10 @@ export default function FeedChapterEnd({
 
   return (
     <div className="animate-fade-up px-5 pb-8 pt-9">
-      <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-brand">
+      <p className="text-xs font-semibold text-brand">
         Chapter {chapter} · complete
       </p>
-      <h3 className="mt-1 font-display text-3xl font-bold uppercase leading-none tracking-tighter text-black">
+      <h3 className="mt-1 font-display text-3xl font-bold leading-[1.05] tracking-[-0.02em] text-ink">
         {canContinue ? (
           <>
             You're
@@ -74,22 +74,23 @@ export default function FeedChapterEnd({
       </h3>
       <p className="mt-3 max-w-[19rem] text-sm leading-relaxed text-muted">
         {summary}. {canContinue
-          ? 'Keep going, change direction, or leave it here — all fine.'
-          : 'Nothing new is waiting. A good moment to go be somewhere else.'}
+          ? 'Keep going, change direction, or leave it here.'
+          : 'Nothing new is waiting — a good moment to be somewhere else.'}
       </p>
 
       <div className="mt-4">
         <CoachMark flag="chapter-end">
-          Feeds here end on purpose. Continuing is always your choice — nothing
-          auto-loads behind your back.
+          Feeds here end on purpose — nothing auto-loads. Continuing is your
+          choice.
         </CoachMark>
       </div>
 
       {/* Skippable one-tap reflection */}
       {onFeeling && (
         <div className="mt-5">
-          <p className="font-display text-[11px] font-bold uppercase tracking-widest text-muted">
-            How did this stretch feel? <span className="font-mono">(optional)</span>
+          <p className="text-xs font-medium text-muted">
+            How did this stretch feel?{' '}
+            <span className="text-faint">(optional)</span>
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {FEELINGS.map((f) => (
@@ -100,12 +101,12 @@ export default function FeedChapterEnd({
                   onFeeling(f)
                 }}
                 disabled={picked !== null}
-                className={`border-2 border-black px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-tight transition-transform active:translate-x-0.5 active:translate-y-0.5 ${
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-transform active:scale-[0.98] ${
                   picked === f
-                    ? 'bg-black text-white'
+                    ? 'bg-ink text-white'
                     : picked
-                      ? 'bg-white text-muted opacity-50'
-                      : 'bg-white text-black'
+                      ? 'border border-hairline bg-white text-faint opacity-60'
+                      : 'border border-hairline bg-white text-ink'
                 }`}
               >
                 {f}
@@ -113,7 +114,7 @@ export default function FeedChapterEnd({
             ))}
           </div>
           {picked && (
-            <p className="mt-2 font-mono text-[10px] uppercase tracking-tight text-muted">
+            <p className="mt-2 text-xs text-faint">
               Noted — the next chapter listens.
             </p>
           )}
@@ -124,20 +125,20 @@ export default function FeedChapterEnd({
         {canContinue && (
           <button
             onClick={onContinue}
-            className="w-full border-2 border-black bg-black py-3.5 font-display text-sm font-bold uppercase tracking-widest text-white shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"
+            className="w-full rounded-full bg-ink py-3.5 font-display text-sm font-semibold text-white transition-transform active:scale-[0.97]"
           >
             Continue another chapter
           </button>
         )}
         <button
           onClick={onChange}
-          className="w-full border-2 border-black bg-white py-3 font-display text-sm font-bold uppercase tracking-widest text-black shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"
+          className="w-full rounded-full border border-hairline bg-white py-3 font-display text-sm font-semibold text-ink transition-transform active:scale-[0.97]"
         >
           {changeLabel}
         </button>
         <button
           onClick={onClose}
-          className="w-full border-2 border-black bg-brand py-3 font-display text-sm font-bold uppercase tracking-widest text-white shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"
+          className="w-full rounded-full bg-brand py-3 font-display text-sm font-semibold text-white transition-transform active:scale-[0.97]"
         >
           Close session
         </button>

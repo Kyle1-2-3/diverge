@@ -24,15 +24,17 @@ function hash(s: string): number {
 
 /**
  * A generated monogram avatar — the identity system that replaces emoji faces.
- * Deterministic black/white tone from the handle, hard black border, monospace
+ * A circle in a deterministic ink/paper tone from the handle, with quiet
  * initials. Reads as "designed", not "an emoji someone picked".
  */
 export default function Avatar({ name, className = '', dark }: AvatarProps) {
   const isDark = dark ?? hash(name) % 2 === 0
   return (
     <span
-      className={`flex shrink-0 items-center justify-center border-2 border-black font-mono font-bold uppercase leading-none tracking-tight ${
-        isDark ? 'bg-black text-white' : 'bg-white text-black'
+      className={`flex shrink-0 items-center justify-center rounded-full font-semibold leading-none ${
+        isDark
+          ? 'bg-ink text-white'
+          : 'border border-hairline bg-canvas text-ink'
       } ${className}`}
     >
       {initials(name)}

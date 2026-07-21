@@ -12,8 +12,8 @@ export function LogoMark(p: SVGProps<SVGSVGElement>) {
       fill="none"
       stroke="currentColor"
       strokeWidth={2.6}
-      strokeLinecap="square"
-      strokeLinejoin="miter"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       {...p}
     >
       <path d="M2 12h9" />
@@ -29,15 +29,16 @@ interface LogoProps {
   className?: string
 }
 
-/** The mark locked up in a hard-bordered box, optionally with the wordmark. */
+/** The mark in a soft rounded tile, optionally with the wordmark — the one
+ *  place Space Grotesk survives, so Diverge keeps its own voice. */
 export default function Logo({ word = true, className = '' }: LogoProps) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      <span className="flex h-9 w-9 items-center justify-center border-2 border-black bg-white text-black">
+      <span className="shadow-soft-sm flex h-9 w-9 items-center justify-center rounded-[10px] bg-ink text-white">
         <LogoMark className="h-5 w-5" />
       </span>
       {word && (
-        <span className="font-display text-base font-bold uppercase tracking-[0.2em]">
+        <span className="font-logo text-lg font-bold tracking-tight">
           Diverge
         </span>
       )}

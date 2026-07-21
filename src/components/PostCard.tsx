@@ -140,7 +140,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
   }
 
   const menuItem =
-    'flex w-full items-center gap-2 border-t-2 border-black px-4 py-2.5 text-left text-sm text-black hover:bg-gray-50'
+    'flex w-full items-center gap-2 border-t border-hairline px-4 py-2.5 text-left text-sm text-ink hover:bg-canvas'
 
   return (
     <article className="animate-fade-up bg-white">
@@ -149,7 +149,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
         <Avatar name={post.handle} className="h-9 w-9 text-xs" />
         <div className="flex-1 leading-tight">
           <div className="flex items-center gap-1">
-            <span className="font-display text-sm font-bold text-black">
+            <span className="text-sm font-semibold text-ink">
               {post.handle}
             </span>
             {post.verified && <Verified className="h-3.5 w-3.5" />}
@@ -160,7 +160,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
         </div>
         <button
           onClick={() => setMenuOpen((v) => !v)}
-          className="relative -mr-1 p-1 text-black"
+          className="relative -mr-1 p-1 text-ink"
           aria-label="More options"
         >
           <More className="h-5 w-5" />
@@ -170,10 +170,10 @@ export default function PostCard({ post, reason }: PostCardProps) {
       {/* "..." menu. Attention: minimal, transparency buried in small print.
           Elsewhere: real controls that genuinely steer the feed. */}
       {menuOpen && (
-        <div className="animate-pop-in mx-3.5 mb-2 border-2 border-black bg-white shadow-hard">
+        <div className="animate-pop-in shadow-soft mx-3.5 mb-2 overflow-hidden rounded-xl border border-hairline bg-white">
           {model === 'attention' ? (
             <>
-              <button onClick={notInterested} className={`${menuItem} border-t-0 font-display font-bold`}>
+              <button onClick={notInterested} className={`${menuItem} border-t-0 font-semibold`}>
                 See fewer posts like this
               </button>
               <button
@@ -190,7 +190,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
                   setShowWhy(true)
                   closeMenu()
                 }}
-                className="flex w-full items-center gap-2 border-t-2 border-black px-4 py-2 text-left font-mono text-[11px] text-muted hover:bg-gray-50"
+                className="flex w-full items-center gap-2 border-t border-hairline px-4 py-2 text-left text-xs text-faint hover:bg-canvas"
               >
                 Why am I seeing this?
               </button>
@@ -202,7 +202,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
                   setShowWhy(true)
                   closeMenu()
                 }}
-                className={`${menuItem} border-t-0 font-display font-bold hover:bg-brand-soft`}
+                className={`${menuItem} border-t-0 font-semibold hover:bg-brand-soft`}
               >
                 ? Why am I seeing this?
               </button>
@@ -228,7 +228,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
 
       {/* Photo */}
       <div
-        className="relative aspect-[4/5] w-full select-none border-y-2 border-black"
+        className="relative aspect-[4/5] w-full select-none"
         onClick={onPhotoTap}
       >
         <SmartImage
@@ -241,20 +241,20 @@ export default function PostCard({ post, reason }: PostCardProps) {
             <HeartFilled className="h-24 w-24 animate-pop-in text-white drop-shadow-lg" />
           </div>
         )}
-        <span className="absolute bottom-2.5 left-2.5 border-2 border-black bg-white px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-tight text-black">
+        <span className="absolute bottom-2.5 left-2.5 rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-medium text-ink">
           {topic.label}
         </span>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-4 px-3.5 pt-3 text-black">
+      <div className="flex items-center gap-4 px-3.5 pt-3 text-ink">
         <button
           onClick={() => (isLiked ? toggleLike(post.id) : likeWithBurst())}
           className="transition-transform active:scale-75"
           aria-label="Like"
         >
           {isLiked ? (
-            <HeartFilled className="h-7 w-7 text-black" />
+            <HeartFilled className="h-7 w-7 text-brand" />
           ) : (
             <Heart className="h-7 w-7" />
           )}
@@ -290,18 +290,18 @@ export default function PostCard({ post, reason }: PostCardProps) {
 
       {/* Likes + caption + comments */}
       <div className="px-3.5 pb-4 pt-2">
-        <p className="font-display text-sm font-bold text-black">
+        <p className="tnum text-sm font-semibold text-ink">
           {compact(post.likes + (isLiked ? 1 : 0))} likes
         </p>
-        <p className="mt-1 text-sm leading-snug text-black">
-          <span className="font-bold">{post.handle}</span> {post.caption}
+        <p className="mt-1 text-sm leading-snug text-ink">
+          <span className="font-semibold">{post.handle}</span> {post.caption}
         </p>
 
         {/* Perspective Paths — quiet, and only where they genuinely help. */}
         {post.paths && post.paths.length > 0 && model !== 'attention' && (
           <button
             onClick={() => setShowPaths(true)}
-            className="mt-2 inline-flex items-center gap-1.5 border-2 border-black bg-white px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-tight text-black shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-hairline bg-white px-3 py-1 text-xs font-medium text-ink transition-transform active:scale-[0.98]"
           >
             {isBehindThe(post) ? '◇ Behind this' : '◇ See another angle'}
           </button>
@@ -313,9 +313,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
         >
           View all {compact(commentCount)} comments
         </button>
-        <p className="mt-1 font-display text-[11px] uppercase tracking-wide text-muted">
-          {post.timeAgo} ago
-        </p>
+        <p className="mt-1 text-[11px] text-faint">{post.timeAgo} ago</p>
       </div>
 
       {/* Sheets */}
@@ -342,25 +340,21 @@ function WhySheet({
 }) {
   return (
     <div
-      className="absolute inset-0 z-40 flex items-end justify-center bg-black/50 p-3"
+      className="absolute inset-0 z-40 flex items-end justify-center bg-black/40"
       onClick={onClose}
     >
       <div
-        className="animate-fade-up w-full border-2 border-black bg-white p-6 pb-7 text-left shadow-hard-lg"
+        className="animate-fade-up shadow-soft-lg w-full rounded-t-2xl bg-white p-6 pb-7 text-left"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="font-display text-[11px] font-bold uppercase tracking-widest text-brand">
-          Transparency
-        </p>
-        <h3 className="mt-1 font-display text-lg font-bold uppercase tracking-tight text-black">
+        <p className="text-xs font-semibold text-brand">Transparency</p>
+        <h3 className="mt-1 font-display text-lg font-bold tracking-[-0.01em] text-ink">
           Why you're seeing this
         </h3>
-        <p className="mt-2 border-l-4 border-black pl-3 text-sm leading-relaxed text-black">
-          {reason}
-        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted">{reason}</p>
         <button
           onClick={onClose}
-          className="mt-5 w-full border-2 border-black bg-black py-3.5 font-display text-sm font-bold uppercase tracking-widest text-white shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"
+          className="mt-5 w-full rounded-full bg-brand py-3.5 text-sm font-semibold text-white transition-transform active:scale-[0.97]"
         >
           Got it
         </button>

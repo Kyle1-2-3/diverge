@@ -12,7 +12,7 @@ export default function StoriesBar({ onOpenStory }: StoriesBarProps) {
   const { showToast } = useInteractions()
 
   return (
-    <div className="no-scrollbar flex gap-3 overflow-x-auto border-b-4 border-black bg-white px-4 py-3">
+    <div className="no-scrollbar flex gap-3 overflow-x-auto border-b border-hairline bg-white px-4 py-3">
       {stories.map((story) => (
         <button
           key={story.id}
@@ -25,26 +25,28 @@ export default function StoriesBar({ onOpenStory }: StoriesBarProps) {
         >
           <span className="relative">
             {story.isYou ? (
-              // "Add your story" — a plain bordered box with a plus.
-              <span className="flex h-14 w-14 items-center justify-center border-2 border-black bg-white font-mono text-2xl font-bold leading-none text-black">
+              // "Add your story" — a quiet circle with a plus.
+              <span className="flex h-14 w-14 items-center justify-center rounded-full border border-hairline bg-white text-2xl leading-none text-muted">
                 +
               </span>
             ) : (
               <Avatar
                 name={story.name}
                 className={`h-14 w-14 text-lg ${
-                  story.outside || story.fresh ? 'shadow-hard-sm' : 'opacity-60'
+                  story.outside || story.fresh
+                    ? 'ring-2 ring-brand ring-offset-2'
+                    : 'opacity-60'
                 }`}
               />
             )}
             {/* Accent marker only for stories from outside the usual circle. */}
             {story.outside && (
-              <span className="absolute -right-1 -top-1 border-2 border-black bg-brand px-1 font-mono text-[9px] font-bold text-white">
-                NEW
+              <span className="absolute -right-1 -top-1 rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white">
+                New
               </span>
             )}
           </span>
-          <span className="max-w-full truncate font-mono text-[10px] uppercase tracking-tight text-black">
+          <span className="max-w-full truncate text-[10px] font-medium text-muted">
             {story.isYou ? 'You' : story.name}
           </span>
         </button>

@@ -84,7 +84,7 @@ export default function BubbleMap({ score }: BubbleMapProps) {
   const sel = bubbles.find((b) => b.group === selected)
 
   return (
-    <div className="border-2 border-black bg-white shadow-hard">
+    <div className="shadow-soft overflow-hidden rounded-xl border border-hairline bg-white">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="block w-full"
@@ -97,8 +97,8 @@ export default function BubbleMap({ score }: BubbleMapProps) {
           cy={CY}
           r={ringR}
           fill="none"
-          stroke="#000"
-          strokeWidth="1.5"
+          stroke="#a39e98"
+          strokeWidth="1.25"
           strokeDasharray="6 5"
           style={{ transition: 'r 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }}
         />
@@ -110,9 +110,8 @@ export default function BubbleMap({ score }: BubbleMapProps) {
             y1={CY}
             x2={b.x}
             y2={b.y}
-            stroke="#000"
-            strokeWidth="1.5"
-            opacity="0.22"
+            stroke="#e6e6e6"
+            strokeWidth="1.25"
             style={{
               transition: 'x2 0.6s, y2 0.6s',
               transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -133,59 +132,65 @@ export default function BubbleMap({ score }: BubbleMapProps) {
               onClick={() => setSelected(isSel ? null : b.group)}
             >
               <circle r={Math.max(b.r, 20)} fill="transparent" />
+              {/* Soft halo instead of a hard outline when selected. */}
               <circle
                 r={b.r}
                 fill={b.color}
-                stroke="#000"
-                strokeWidth={isSel ? 4 : 2}
+                stroke="#191918"
+                strokeOpacity={isSel ? 0.3 : 0}
+                strokeWidth={3}
                 style={{ transition: 'r 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }}
               />
               <text
                 y={b.upper ? -(b.r + 6) : b.r + 12}
                 textAnchor="middle"
-                className="font-mono"
-                fontSize="8.5"
-                fontWeight="700"
-                fill="#000"
+                fontSize="9"
+                fontWeight="500"
+                fill="#615d59"
               >
-                {SHORT[b.group].toUpperCase()}
+                {SHORT[b.group]}
               </text>
             </g>
           )
         })}
 
         {/* You, at the center of it all. */}
-        <circle cx={CX} cy={CY} r="16" fill="#2b3bff" stroke="#000" strokeWidth="2" />
+        <circle
+          cx={CX}
+          cy={CY}
+          r="16"
+          style={{ fill: 'var(--color-brand)' }}
+        />
         <text
           x={CX}
           y={CY + 3}
           textAnchor="middle"
-          className="font-display"
           fontSize="9"
-          fontWeight="700"
+          fontWeight="600"
           fill="#fff"
-          letterSpacing="1"
         >
-          YOU
+          You
         </text>
       </svg>
 
       {/* Detail line — fixed height so tapping never jumps the layout. */}
-      <div className="flex min-h-[52px] items-center border-t-2 border-black px-4 py-2.5">
+      <div className="flex min-h-[52px] items-center border-t border-hairline px-4 py-2.5">
         {sel ? (
           <div className="flex w-full items-center gap-2.5">
             <span
-              className="h-3.5 w-3.5 shrink-0 border-2 border-black"
+              className="h-3 w-3 shrink-0 rounded-full"
               style={{ background: sel.color }}
             />
-            <p className="flex-1 text-[11px] leading-snug text-black">
-              <span className="font-bold">{sel.label}</span> —{' '}
+            <p className="flex-1 text-[11px] leading-snug text-ink">
+              <span className="font-semibold">{sel.label}</span> —{' '}
               {sel.feedCount} post{sel.feedCount === 1 ? '' : 's'} around ·{' '}
               {sel.engaged} you engaged with
             </p>
             <span
-              className={`shrink-0 border-2 border-black px-1.5 py-0.5 font-display text-[9px] font-bold uppercase tracking-tight ${
-                sel.inBubble ? 'bg-black text-white' : 'bg-white text-black'
+              className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                sel.inBubble
+                  ? 'bg-ink text-white'
+                  : 'border border-hairline bg-white text-muted'
               }`}
             >
               {sel.inBubble ? 'Close to you' : 'Further out'}

@@ -15,14 +15,14 @@ export default function CoachMark({ flag, children }: CoachMarkProps) {
   const { seen, markSeen } = usePrefs()
   if (seen[flag]) return null
   return (
-    <div className="animate-fade-up flex items-start gap-2.5 border-2 border-black bg-brand-soft px-3 py-2.5">
-      <span className="mt-0.5 shrink-0 border-2 border-black bg-brand px-1 font-mono text-[9px] font-bold text-white">
-        NEW
+    <div className="animate-fade-up flex items-start gap-2.5 rounded-xl bg-brand-soft px-3.5 py-2.5">
+      <span className="mt-0.5 shrink-0 rounded-full bg-brand px-2 py-0.5 text-[9px] font-semibold text-white">
+        New
       </span>
-      <p className="flex-1 text-[11px] leading-snug text-black">{children}</p>
+      <p className="flex-1 text-[11px] leading-snug text-ink">{children}</p>
       <button
         onClick={() => markSeen(flag)}
-        className="shrink-0 p-0.5 font-mono text-sm font-bold leading-none text-black"
+        className="shrink-0 p-0.5 text-sm leading-none text-muted"
         aria-label="Dismiss tip"
       >
         ✕

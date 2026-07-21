@@ -41,20 +41,20 @@ export default function PerspectivePathSheet({
 
   return (
     <div
-      className="absolute inset-0 z-40 flex items-end bg-black/50"
+      className="absolute inset-0 z-40 flex items-end bg-black/40"
       onClick={onClose}
     >
       <div
-        className="animate-fade-up no-scrollbar max-h-[85%] w-full overflow-y-auto border-t-4 border-black bg-white"
+        className="animate-fade-up shadow-soft-lg no-scrollbar max-h-[85%] w-full overflow-y-auto rounded-t-2xl bg-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b-2 border-black px-4 py-3">
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-black">
+        <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
+          <span className="font-display text-sm font-bold tracking-[-0.01em] text-ink">
             {isBehindThe(post) ? 'Behind this' : 'More angles'}
           </span>
           <button
             onClick={onClose}
-            className="p-1 font-mono text-lg font-bold leading-none text-black"
+            className="p-1 text-lg leading-none text-muted"
             aria-label="Close perspectives"
           >
             ✕
@@ -63,10 +63,10 @@ export default function PerspectivePathSheet({
 
         {/* One-time, dismissed automatically when the sheet closes. */}
         {firstTime && (
-          <div className="border-b-2 border-black bg-brand-soft px-4 py-2.5">
-            <p className="text-[11px] leading-snug text-black">
-              Some posts carry extra angles — not to argue with you, just to
-              show the same thing from more than one seat.
+          <div className="border-b border-hairline bg-brand-soft px-4 py-2.5">
+            <p className="text-[11px] leading-snug text-ink">
+              Some posts carry extra angles — the same thing from more than one
+              seat, not an argument.
             </p>
           </div>
         )}
@@ -77,8 +77,10 @@ export default function PerspectivePathSheet({
             <button
               key={i}
               onClick={() => setActive(i)}
-              className={`shrink-0 border-2 border-black px-3 py-1 font-display text-[11px] font-bold uppercase tracking-tight transition-transform active:translate-x-0.5 active:translate-y-0.5 ${
-                i === active ? 'bg-black text-white' : 'bg-white text-black'
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-transform active:scale-[0.98] ${
+                i === active
+                  ? 'bg-ink text-white'
+                  : 'border border-hairline bg-white text-ink'
               }`}
             >
               {ANGLE_LABEL[a.type]}
@@ -88,10 +90,10 @@ export default function PerspectivePathSheet({
 
         {angle && (
           <div className="px-5 pb-6">
-            <h3 className="font-display text-lg font-bold uppercase leading-tight tracking-tight text-black">
+            <h3 className="font-display text-lg font-bold leading-tight tracking-[-0.01em] text-ink">
               {angle.title}
             </h3>
-            <p className="mt-2 border-l-4 border-black pl-3 text-sm leading-relaxed text-black">
+            <p className="mt-2 text-sm leading-relaxed text-muted">
               {angle.body}
             </p>
             <button
@@ -99,7 +101,7 @@ export default function PerspectivePathSheet({
                 if (firstTime) markSeen('path-sheet')
                 onClose()
               }}
-              className="mt-5 w-full border-2 border-black bg-black py-3 font-display text-sm font-bold uppercase tracking-widest text-white shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"
+              className="mt-5 w-full rounded-full bg-brand py-3 font-display text-sm font-semibold text-white transition-transform active:scale-[0.97]"
             >
               Back to the feed
             </button>

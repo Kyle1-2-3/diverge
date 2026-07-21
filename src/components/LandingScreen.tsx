@@ -5,33 +5,28 @@ interface LandingScreenProps {
 }
 
 /**
- * A stark opening screen. Raw and declarative — black field, one accent slab,
- * a blunt statement. It states a stance, it doesn't sell a vibe.
+ * A quiet opening screen: paper-calm surface, one heavy headline, one blue
+ * pill. Says one thing, then gets out of the way.
  */
 export default function LandingScreen({ onStart }: LandingScreenProps) {
   return (
-    <div className="no-scrollbar relative h-full overflow-y-auto overflow-x-hidden bg-white text-black sm:pt-7">
+    <div className="no-scrollbar relative h-full overflow-y-auto overflow-x-hidden bg-white text-ink sm:pt-7">
       <div className="animate-fade-up relative flex min-h-full flex-col px-6 pb-8 pt-12">
         {/* Logo mark — the diverging-lines wordmark. */}
         <Logo />
 
         {/* Big statement */}
         <div className="mt-auto">
-          <p className="mb-3 inline-block border-2 border-black bg-black px-2 py-0.5 font-mono text-xs font-bold uppercase tracking-widest text-white">
-            v0.1 — prototype
+          <p className="mb-4 inline-block rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">
+            Prototype
           </p>
-          <h1 className="font-display text-5xl font-bold uppercase leading-[0.98] tracking-tighter">
-            See
+          <h1 className="font-display text-5xl font-bold leading-[1.02] tracking-[-0.03em]">
+            See beyond
             <br />
-            beyond
-            <br />
-            your
-            <br />
-            feed.
+            your feed.
           </h1>
-          <p className="mt-6 max-w-[20rem] border-l-4 border-black pl-3 text-sm leading-relaxed">
-            A feed that works against your habits, not for them. Same scroll —
-            a world the algorithm keeps from you.
+          <p className="mt-5 max-w-[20rem] text-[15px] leading-relaxed text-muted">
+            A feed that shows you what the algorithm won&rsquo;t.
           </p>
         </div>
 
@@ -39,12 +34,12 @@ export default function LandingScreen({ onStart }: LandingScreenProps) {
         <div className="mt-9">
           <button
             onClick={onStart}
-            className="w-full border-2 border-black bg-black py-4 font-display text-base font-bold uppercase tracking-widest text-white shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"
+            className="w-full rounded-full bg-brand py-4 font-display text-base font-semibold text-white transition-transform active:scale-[0.97]"
           >
-            Enter Diverge →
+            Get started
           </button>
-          <p className="mt-4 font-display text-[11px] uppercase tracking-wider text-muted">
-            No account · design prototype
+          <p className="mt-4 text-center text-xs text-faint">
+            No account needed
           </p>
         </div>
       </div>

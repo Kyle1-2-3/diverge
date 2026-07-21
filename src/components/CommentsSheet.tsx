@@ -32,22 +32,24 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
 
   return (
     <div
-      className="absolute inset-0 z-40 flex items-end bg-black/50"
+      className="absolute inset-0 z-40 flex items-end bg-black/40"
       onClick={onClose}
     >
       <div
-        className="animate-fade-up flex max-h-[75%] w-full flex-col border-t-4 border-black bg-white"
+        className="animate-fade-up shadow-soft-lg flex max-h-[75%] w-full flex-col rounded-t-2xl bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-black px-4 py-3">
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-black">
+        <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
+          <span className="font-display text-sm font-bold tracking-[-0.01em] text-ink">
             Comments{' '}
-            <span className="font-mono text-muted">({compact(total)})</span>
+            <span className="tnum font-medium text-muted">
+              ({compact(total)})
+            </span>
           </span>
           <button
             onClick={onClose}
-            className="p-1 font-mono text-lg font-bold leading-none text-black"
+            className="p-1 text-lg leading-none text-muted"
             aria-label="Close comments"
           >
             ✕
@@ -60,13 +62,10 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
             <div key={i} className="mb-4 flex items-start gap-2.5">
               <Avatar name={c.handle} className="h-8 w-8 text-[10px]" />
               <div className="flex-1 leading-snug">
-                <p className="text-sm text-black">
-                  <span className="font-display font-bold">{c.handle}</span>{' '}
-                  {c.text}
+                <p className="text-sm text-ink">
+                  <span className="font-semibold">{c.handle}</span> {c.text}
                 </p>
-                <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wide text-muted">
-                  {c.timeAgo} ago
-                </p>
+                <p className="mt-0.5 text-[11px] text-faint">{c.timeAgo} ago</p>
               </div>
             </div>
           ))}
@@ -75,11 +74,11 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
             <div key={c.id} className="mb-4 flex items-start gap-2.5">
               <Avatar name="You" dark className="h-8 w-8 text-[10px]" />
               <div className="flex-1 leading-snug">
-                <p className="text-sm text-black">
-                  <span className="font-display font-bold">you</span> {c.text}
+                <p className="text-sm text-ink">
+                  <span className="font-semibold">you</span> {c.text}
                 </p>
-                <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wide text-brand">
-                  your comment
+                <p className="mt-0.5 text-[11px] font-medium text-brand">
+                  Your comment
                 </p>
               </div>
             </div>
@@ -87,7 +86,7 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
 
           {/* The big number vs the few shown — wink at it instead of faking
               hundreds of rows. */}
-          <p className="pb-2 pt-1 text-center font-mono text-[10px] uppercase tracking-widest text-muted">
+          <p className="pb-2 pt-1 text-center text-[11px] text-faint">
             + {compact(post.comments)} more from people you may not follow
           </p>
         </div>
@@ -95,19 +94,19 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
         {/* Composer */}
         <form
           onSubmit={submit}
-          className="flex items-center gap-2 border-t-2 border-black px-3 py-2.5"
+          className="flex items-center gap-2 border-t border-hairline px-3 py-2.5"
         >
           <Avatar name="You" dark className="h-8 w-8 text-[10px]" />
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Add a comment…"
-            className="min-w-0 flex-1 border-2 border-black bg-white px-3 py-2 font-mono text-xs text-black placeholder:text-muted focus:outline-none"
+            className="min-w-0 flex-1 rounded-md border border-hairline bg-white px-3 py-2 text-sm text-ink placeholder:text-faint focus:outline-none"
           />
           <button
             type="submit"
             disabled={!text.trim()}
-            className="border-2 border-black bg-black px-3 py-2 font-display text-xs font-bold uppercase tracking-widest text-white disabled:opacity-30"
+            className="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-30"
           >
             Post
           </button>

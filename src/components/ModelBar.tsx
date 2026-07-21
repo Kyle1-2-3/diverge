@@ -7,10 +7,10 @@ interface ModelBarProps {
 }
 
 /**
- * The always-visible experiment control: a slim lab-style strip above the app
- * stating which business model is running, with a switcher sheet behind it.
- * This is the one piece of UI that belongs to the research prototype rather
- * than to "the app" — deliberately styled like an instrument label.
+ * The always-visible experiment control: a slim strip above the app stating
+ * which business model is running, with a switcher sheet behind it. This is
+ * the one piece of UI that belongs to the research prototype rather than to
+ * "the app" — kept quiet so the app itself stays in focus.
  */
 export default function ModelBar({ onSwitch }: ModelBarProps) {
   const { model, meta } = useModel()
@@ -20,38 +20,35 @@ export default function ModelBar({ onSwitch }: ModelBarProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="z-30 flex w-full shrink-0 items-center justify-between gap-2 border-b-4 border-black bg-black px-3 py-1.5 text-left"
+        className="z-30 flex w-full shrink-0 items-center justify-between gap-2 border-b border-hairline bg-white px-3.5 py-2 text-left"
       >
         <span className="flex min-w-0 items-center gap-2">
           <span
-            className="h-2.5 w-2.5 shrink-0 border border-white"
+            className="h-2 w-2 shrink-0 rounded-full"
             style={{ background: meta.accent }}
           />
-          <span className="truncate font-mono text-[10px] font-bold uppercase tracking-widest text-white">
-            model: {meta.name}
+          <span className="truncate text-xs font-medium text-muted">
+            {meta.name}
           </span>
         </span>
-        <span className="shrink-0 font-mono text-[10px] font-bold uppercase tracking-widest text-white/70">
-          switch ▾
+        <span className="shrink-0 text-xs font-semibold text-brand">
+          Switch
         </span>
       </button>
 
       {open && (
         <div
-          className="absolute inset-0 z-50 flex items-end bg-black/60"
+          className="absolute inset-0 z-50 flex items-end bg-black/40"
           onClick={() => setOpen(false)}
         >
           <div
-            className="animate-fade-up w-full border-t-4 border-black bg-white p-4 pb-6"
+            className="animate-fade-up shadow-soft-lg w-full rounded-t-2xl bg-white p-5 pb-7"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="font-display text-[11px] font-bold uppercase tracking-widest text-muted">
-              The experiment
-            </p>
-            <h3 className="mt-1 font-display text-xl font-bold uppercase tracking-tight text-black">
+            <h3 className="font-display text-xl font-bold tracking-[-0.01em] text-ink">
               Change who pays
             </h3>
-            <p className="mt-1 text-xs leading-snug text-muted">
+            <p className="mt-1 text-[13px] leading-snug text-muted">
               The whole app rebuilds itself around the new incentive.
             </p>
 
@@ -65,21 +62,23 @@ export default function ModelBar({ onSwitch }: ModelBarProps) {
                       setOpen(false)
                       if (!active) onSwitch(m.id)
                     }}
-                    className={`flex items-center gap-3 border-2 border-black p-3 text-left transition-transform active:translate-x-0.5 active:translate-y-0.5 ${
-                      active ? 'bg-black text-white' : 'bg-white text-black shadow-hard-sm'
+                    className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-transform active:scale-[0.98] ${
+                      active
+                        ? 'border-transparent bg-ink text-white'
+                        : 'shadow-soft-sm border-hairline bg-white text-ink'
                     }`}
                   >
                     <span
-                      className="h-8 w-8 shrink-0 border-2 border-black"
+                      className="h-8 w-8 shrink-0 rounded-lg"
                       style={{ background: m.accent }}
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block font-display text-sm font-bold uppercase tracking-tight">
+                      <span className="block font-display text-sm font-semibold">
                         {m.name}
-                        {active && ' — running'}
+                        {active && ' · running'}
                       </span>
                       <span
-                        className={`block truncate font-mono text-[10px] uppercase tracking-tight ${
+                        className={`block truncate text-xs ${
                           active ? 'text-white/70' : 'text-muted'
                         }`}
                       >

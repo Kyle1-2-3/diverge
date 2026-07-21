@@ -282,17 +282,15 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
   if (closed) {
     return (
       <div className="flex h-full flex-col items-center justify-center bg-white px-8 text-center">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted">
-          Session ended
-        </p>
-        <h2 className="mt-2 font-display text-3xl font-bold uppercase leading-none tracking-tighter text-black">
+        <p className="text-xs font-medium text-faint">Session ended</p>
+        <h2 className="mt-2 font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-ink">
           Nothing here is
           <br />
           counting your absence.
         </h2>
         <button
           onClick={startNewSession}
-          className="mt-8 border-2 border-black bg-black px-6 py-3 font-display text-sm font-bold uppercase tracking-widest text-white shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"
+          className="mt-8 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
         >
           Start a new session
         </button>
@@ -303,13 +301,13 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
   return (
     <div className="bg-white pb-4">
       {/* Top bar — same slot, three philosophies. */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b-4 border-black bg-white px-4 py-3">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-hairline bg-white px-4 py-3">
         <Logo />
         <div className="flex items-center gap-2.5">
           {model === 'subscription' && (
             <button
               onClick={onChangeMood}
-              className="flex items-center gap-1.5 border-2 border-black bg-white px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-tight text-black transition-transform active:translate-x-0.5 active:translate-y-0.5"
+              className="flex items-center gap-1.5 rounded-full border border-hairline bg-white px-3 py-1 text-xs font-medium text-ink transition-transform active:scale-[0.98]"
             >
               {intention.emoji} {intention.title}
             </button>
@@ -317,9 +315,9 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
           {model === 'public' && (
             <button
               onClick={() => setAlgoOpen(true)}
-              className="flex items-center gap-1.5 border-2 border-black bg-brand-soft px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-tight text-black transition-transform active:translate-x-0.5 active:translate-y-0.5"
+              className="flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand transition-transform active:scale-[0.98]"
             >
-              ◐ mix · algorithm
+              ◐ Mix · algorithm
             </button>
           )}
           <button
@@ -327,12 +325,12 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
               setActivityOpen(true)
               clearUnread()
             }}
-            className="relative text-black"
+            className="relative text-ink"
             aria-label="Notifications"
           >
             <Heart className="h-6 w-6" />
             {model === 'attention' && unread > 0 && (
-              <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center border-2 border-white bg-brand px-0.5 font-mono text-[9px] font-bold leading-none text-white">
+              <span className="tnum absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[9px] font-bold leading-none text-white">
                 {unread}
               </span>
             )}
@@ -347,21 +345,19 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
       {model === 'public' && (
         <button
           onClick={() => setAlgoOpen(true)}
-          className="flex w-full items-center justify-between border-b-4 border-black bg-brand-soft px-4 py-2 text-left"
+          className="flex w-full items-center justify-between bg-brand-soft px-4 py-2 text-left"
         >
-          <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-brand">
-            Ranked for balance, never engagement
+          <span className="text-xs font-medium text-brand">
+            Ranked for balance, not engagement
           </span>
-          <span className="font-mono text-[10px] font-bold uppercase text-brand">
-            how? →
-          </span>
+          <span className="text-xs font-semibold text-brand">How →</span>
         </button>
       )}
 
       {/* ---- The stream --------------------------------------------------- */}
       {model === 'attention' ? (
         <>
-          <div className="divide-y-4 divide-black border-b-4 border-black">
+          <div className="divide-y divide-hairline border-b border-hairline">
             {items.map((item) =>
               item.kind === 'post' ? (
                 <PostCard key={item.key} post={item.post} />
@@ -374,20 +370,20 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
             ref={sentinelRef}
             className="flex items-center justify-center gap-2 px-5 py-8"
           >
-            <span className="h-2.5 w-2.5 animate-pulse bg-brand" />
-            <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted">
-              finding more for you…
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-brand" />
+            <span className="text-xs font-medium text-faint">
+              Finding more for you…
             </span>
           </div>
         </>
       ) : (
         <>
-          <div className="divide-y-4 divide-black border-b-4 border-black">
+          <div className="divide-y divide-hairline border-b border-hairline">
             {chapters.map((chapter, ci) => (
-              <div key={ci} className="divide-y-4 divide-black">
+              <div key={ci} className="divide-y divide-hairline">
                 {ci > 0 && (
-                  <p className="bg-white px-4 py-2 text-center font-mono text-[10px] font-bold uppercase tracking-widest text-muted">
-                    — chapter {ci + 1} —
+                  <p className="tnum bg-white px-4 py-2 text-center text-xs font-medium text-faint">
+                    Chapter {ci + 1}
                   </p>
                 )}
                 {chapter.filter(visible).map((post) => (

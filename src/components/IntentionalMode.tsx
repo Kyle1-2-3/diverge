@@ -29,17 +29,17 @@ export default function IntentionalMode({
     <div className="no-scrollbar h-full overflow-y-auto bg-white sm:pt-7">
       <div className="animate-fade-up flex min-h-full flex-col px-6 pb-7 pt-12">
         <header>
-          <p className="font-display text-[11px] font-bold uppercase tracking-widest text-muted">
+          <p className="text-xs font-semibold text-faint">
             Two seconds, promise
           </p>
-          <h2 className="mt-2 font-display text-3xl font-bold uppercase leading-none tracking-tighter text-black">
+          <h2 className="mt-2 font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-ink">
             What's the
             <br />
             vibe today?
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Your pick genuinely shapes the session — you can change it anytime
-            from the pill up top.
+            Your pick shapes the session — change it anytime from the pill up
+            top.
           </p>
         </header>
 
@@ -49,19 +49,19 @@ export default function IntentionalMode({
             <button
               key={intention.id}
               onClick={() => pick(intention.id)}
-              className="animate-fade-up flex items-center gap-3.5 border-2 border-black bg-white px-4 py-3 text-left shadow-hard-sm transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              className="animate-fade-up shadow-soft flex items-center gap-3.5 rounded-xl border border-hairline bg-white px-4 py-3 text-left transition-transform active:scale-[0.98]"
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <span className="text-2xl">{intention.emoji}</span>
               <span className="flex-1">
-                <span className="block font-display text-sm font-bold uppercase tracking-tight text-black">
+                <span className="block font-display text-sm font-semibold text-ink">
                   {intention.title}
                 </span>
                 <span className="block text-xs text-muted">
                   {intention.subtitle}
                 </span>
               </span>
-              <span className="font-display text-lg font-bold text-black">→</span>
+              <span className="text-faint">→</span>
             </button>
           ))}
         </div>
@@ -74,16 +74,16 @@ export default function IntentionalMode({
               setRemember(e.target.checked)
               if (!e.target.checked) setRememberedIntention(null)
             }}
-            className="h-4 w-4 accent-black"
+            className="h-4 w-4 accent-brand"
           />
-          <span className="font-mono text-[11px] uppercase tracking-tight text-muted">
+          <span className="text-xs font-medium text-muted">
             Remember my pick for next time
           </span>
         </label>
 
         <button
           onClick={onSkip}
-          className="mt-auto pt-6 text-center font-mono text-[11px] font-bold uppercase tracking-widest text-muted"
+          className="mt-auto pt-6 text-center text-xs font-semibold text-muted"
         >
           Skip for now →
         </button>

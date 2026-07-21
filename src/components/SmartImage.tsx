@@ -9,7 +9,7 @@ interface SmartImageProps {
 /**
  * Loads a real photo with a graceful, on-brand fallback: a flat neutral block
  * shows while the image loads and stays if the device is offline or the photo
- * 404s. No rainbow gradients, no emoji — it matches the brutalist system.
+ * 404s. No rainbow gradients, no emoji — it stays quiet like the rest.
  */
 export default function SmartImage({
   src,
@@ -20,17 +20,15 @@ export default function SmartImage({
   const [failed, setFailed] = useState(false)
 
   return (
-    <div className={`relative overflow-hidden bg-neutral-200 ${className}`}>
+    <div className={`relative overflow-hidden bg-hairline ${className}`}>
       {/* Flat fallback / loading state. */}
       <div
-        className={`absolute inset-0 flex items-center justify-center bg-neutral-200 transition-opacity duration-300 ${
+        className={`absolute inset-0 flex items-center justify-center bg-hairline transition-opacity duration-300 ${
           loaded && !failed ? 'opacity-0' : 'opacity-100'
         }`}
       >
         {failed && (
-          <span className="font-mono text-[10px] uppercase tracking-widest text-black/40">
-            no image
-          </span>
+          <span className="text-[11px] font-medium text-faint">No image</span>
         )}
       </div>
 

@@ -6,66 +6,59 @@ interface ModelSelectScreenProps {
 
 /**
  * The experiment's front door: before entering the app, the user chooses who
- * pays for it. Framed as the research question it is — every difference they
- * are about to experience follows from this one choice.
+ * pays for it. Quiet cards on white — the accent dot is the only colour, and
+ * it follows the chosen model through the whole app.
  */
 export default function ModelSelectScreen({ onSelect }: ModelSelectScreenProps) {
   return (
     <div className="no-scrollbar h-full overflow-y-auto bg-white sm:pt-7">
       <div className="animate-fade-up flex min-h-full flex-col px-6 pb-8 pt-12">
-        <header className="border-b-4 border-black pb-4">
-          <p className="font-display text-[11px] font-bold uppercase tracking-widest text-muted">
-            The experiment — pick a business model
-          </p>
-          <h2 className="mt-2 font-display text-3xl font-bold uppercase leading-none tracking-tighter text-black">
-            Who pays
+        <header>
+          <p className="text-xs font-semibold text-faint">The experiment</p>
+          <h2 className="mt-2 font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-ink">
+            Who pays for
             <br />
-            for your feed?
+            your feed?
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Same app. Same posts. Three ways of making money. Watch every
-            design decision follow the money — you can switch anytime.
+            Same app, three ways of making money. Every design choice follows
+            the money — switch anytime.
           </p>
         </header>
 
-        <div className="mt-5 flex flex-col gap-4">
+        <div className="mt-6 flex flex-col gap-3">
           {models.map((m, i) => (
             <button
               key={m.id}
               onClick={() => onSelect(m.id)}
-              className="animate-fade-up border-2 border-black bg-white text-left shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"
+              className="animate-fade-up shadow-soft rounded-xl border border-hairline bg-white px-4 py-4 text-left transition-transform active:scale-[0.98]"
               style={{ animationDelay: `${i * 90}ms` }}
             >
-              {/* Accent slab — this colour follows the model through the app */}
-              <div
-                className="flex items-center justify-between border-b-2 border-black px-4 py-2"
-                style={{ background: m.accent }}
-              >
-                <span className="font-display text-sm font-bold uppercase tracking-widest text-white">
-                  {`0${i + 1} — ${m.name}`}
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2.5">
+                  {/* Accent dot — this colour follows the model through the app */}
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ background: m.accent }}
+                  />
+                  <span className="font-display text-base font-semibold text-ink">
+                    {m.name}
+                  </span>
                 </span>
-                <span className="font-mono text-lg font-bold text-white">→</span>
+                <span className="text-faint">→</span>
               </div>
-              <div className="px-4 py-3">
-                <p className="font-display text-sm font-bold leading-snug text-black">
-                  {m.whoPays}
-                </p>
-                <p className="mt-1.5 font-mono text-[11px] uppercase tracking-tight text-muted">
-                  {m.kpi}
-                </p>
-                <p className="mt-2 border-l-4 pl-2.5 text-[13px] leading-snug text-black" style={{ borderColor: m.accent }}>
-                  {m.philosophy}
-                </p>
-                <p className="mt-2 font-mono text-[11px] italic text-muted">
-                  {m.feel}
-                </p>
-              </div>
+              <p className="mt-2 text-sm font-medium leading-snug text-ink">
+                {m.whoPays}
+              </p>
+              <p className="mt-1 text-[13px] leading-snug text-muted">
+                {m.philosophy}
+              </p>
             </button>
           ))}
         </div>
 
-        <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-widest text-muted">
-          An interactive design-research prototype
+        <p className="mt-6 text-center text-xs text-faint">
+          Design-research prototype
         </p>
       </div>
     </div>

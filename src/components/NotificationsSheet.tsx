@@ -45,20 +45,20 @@ export default function NotificationsSheet({
 
   return (
     <div
-      className="absolute inset-0 z-40 flex items-end bg-black/50"
+      className="absolute inset-0 z-40 flex items-end bg-black/40"
       onClick={onClose}
     >
       <div
-        className="animate-fade-up flex max-h-[80%] w-full flex-col border-t-4 border-black bg-white"
+        className="animate-fade-up shadow-soft-lg flex max-h-[80%] w-full flex-col rounded-t-2xl bg-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b-2 border-black px-4 py-3">
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-black">
+        <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
+          <span className="font-display text-sm font-bold tracking-[-0.01em] text-ink">
             {title}
           </span>
           <button
             onClick={onClose}
-            className="p-1 font-mono text-lg font-bold leading-none text-black"
+            className="p-1 text-lg leading-none text-muted"
             aria-label="Close activity"
           >
             ✕
@@ -67,17 +67,17 @@ export default function NotificationsSheet({
 
         {/* Model-specific framing before the list */}
         {model === 'attention' && (
-          <div className="border-b-2 border-black bg-brand px-4 py-2 text-white">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-widest">
+          <div className="border-b border-hairline bg-brand px-4 py-2.5 text-white">
+            <p className="text-xs font-semibold">
               🔥 3 people posted while you were away — don't fall behind
             </p>
           </div>
         )}
         {model === 'subscription' && (
-          <div className="border-b-2 border-black bg-brand-soft px-4 py-2.5">
-            <p className="text-xs leading-snug text-black">
-              Delivered once a day, at a time you chose. Today:{' '}
-              <span className="font-bold">
+          <div className="border-b border-hairline bg-brand-soft px-4 py-2.5">
+            <p className="text-xs leading-snug text-ink">
+              Once a day, at a time you chose. Today:{' '}
+              <span className="font-semibold">
                 {likeCount} likes · {followCount} follows · {commentCount}{' '}
                 comments
               </span>
@@ -86,11 +86,10 @@ export default function NotificationsSheet({
           </div>
         )}
         {model === 'public' && (
-          <div className="border-b-2 border-black bg-brand-soft px-4 py-2.5">
-            <p className="text-xs leading-snug text-black">
-              We notify you about <span className="font-bold">people</span>,
-              never about numbers. Likes are visible on your posts if you go
-              looking — they won't come looking for you.
+          <div className="border-b border-hairline bg-brand-soft px-4 py-2.5">
+            <p className="text-xs leading-snug text-ink">
+              We notify you about <span className="font-semibold">people</span>,
+              never numbers. Likes won't come looking for you.
             </p>
           </div>
         )}
@@ -101,25 +100,22 @@ export default function NotificationsSheet({
               <span className="relative shrink-0">
                 <Avatar name={n.handle} className="h-10 w-10 text-xs" />
                 {n.outside && model !== 'attention' && (
-                  <span className="absolute -right-1 -top-1 border-2 border-black bg-brand px-0.5 font-mono text-[8px] font-bold text-white">
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[8px] font-bold text-white">
                     ↯
                   </span>
                 )}
               </span>
-              <p className="flex-1 text-sm leading-snug text-black">
-                <span className="font-display font-bold">{n.handle}</span>{' '}
-                {n.text}{' '}
-                <span className="font-mono text-[10px] uppercase text-muted">
-                  {n.timeAgo}
-                </span>
+              <p className="flex-1 text-sm leading-snug text-ink">
+                <span className="font-semibold">{n.handle}</span> {n.text}{' '}
+                <span className="text-[11px] text-faint">{n.timeAgo}</span>
               </p>
               {n.type === 'follow' && (
                 <button
                   onClick={() => toggleFollow(n.id)}
-                  className={`shrink-0 border-2 border-black px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-tight transition-transform active:translate-x-0.5 active:translate-y-0.5 ${
+                  className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition-transform active:scale-[0.98] ${
                     followed.has(n.id)
-                      ? 'bg-white text-black'
-                      : 'bg-black text-white'
+                      ? 'border border-hairline bg-white text-ink'
+                      : 'bg-ink text-white'
                   }`}
                 >
                   {followed.has(n.id) ? 'Following' : 'Follow back'}
@@ -127,7 +123,7 @@ export default function NotificationsSheet({
               )}
             </div>
           ))}
-          <p className="px-4 pb-4 pt-2 text-center font-mono text-[10px] uppercase tracking-widest text-muted">
+          <p className="px-4 pb-4 pt-2 text-center text-[11px] text-faint">
             {model === 'attention'
               ? 'Things move fast — check back soon'
               : model === 'subscription'

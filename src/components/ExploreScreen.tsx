@@ -66,7 +66,7 @@ export default function ExploreScreen() {
     const configs: Record<BusinessModel, ExploreCfg> = {
       attention: {
         title: 'For you',
-        placeholder: 'search (or just keep scrolling)',
+        placeholder: 'Search (or just keep scrolling)',
         note: null,
         chips: [
           { label: 'For you', test: () => true },
@@ -78,8 +78,8 @@ export default function ExploreScreen() {
       },
       subscription: {
         title: 'Search',
-        placeholder: 'what are you looking for?',
-        note: 'We recommend less, so you choose more. Results are newest first.',
+        placeholder: 'What are you looking for?',
+        note: 'Less recommending, more choosing. Newest first.',
         chips: [
           { label: 'Everything', test: () => true },
           { label: 'Fresh', test: fresh },
@@ -88,8 +88,8 @@ export default function ExploreScreen() {
       },
       public: {
         title: 'One step out',
-        placeholder: 'search every topic…',
-        note: 'Discovery starts one step from your usual — related, never random.',
+        placeholder: 'Search every topic…',
+        note: 'Discovery starts one step from your usual — never random.',
         chips: [
           { label: '→ Near your interests', test: (p) => discoveryIds.has(p.id) },
           { label: 'Balanced mix', test: () => true },
@@ -122,22 +122,22 @@ export default function ExploreScreen() {
   return (
     <div className="bg-white pb-6">
       {/* Top bar + search */}
-      <header className="sticky top-0 z-20 border-b-4 border-black bg-white px-4 py-3">
-        <h1 className="mb-2.5 font-display text-2xl font-bold uppercase tracking-tighter text-black">
+      <header className="sticky top-0 z-20 border-b border-hairline bg-white px-4 py-3">
+        <h1 className="mb-2.5 font-display text-2xl font-bold tracking-[-0.02em] text-ink">
           {cfg.title}
         </h1>
-        <div className="flex items-center gap-2 border-2 border-black bg-white px-3 py-2">
-          <span className="text-muted">⌕</span>
+        <div className="flex items-center gap-2 rounded-md border border-hairline bg-white px-3 py-2">
+          <span className="text-faint">⌕</span>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={cfg.placeholder}
-            className="min-w-0 flex-1 bg-transparent font-display text-sm text-black placeholder:text-muted focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent text-sm text-ink placeholder:text-faint focus:outline-none"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="font-mono text-sm font-bold text-black"
+              className="text-sm font-semibold text-muted"
               aria-label="Clear search"
             >
               ✕
@@ -145,7 +145,7 @@ export default function ExploreScreen() {
           )}
         </div>
         {cfg.note && (
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-tight text-muted">
+          <p className="mt-2 text-xs text-faint">
             {cfg.note}
           </p>
         )}
@@ -157,8 +157,10 @@ export default function ExploreScreen() {
           <button
             key={c.label}
             onClick={() => setChip(i)}
-            className={`shrink-0 border-2 border-black px-3 py-1 font-display text-[11px] font-bold uppercase tracking-tight transition-transform active:translate-x-0.5 active:translate-y-0.5 ${
-              i === chip ? 'bg-black text-white' : 'bg-white text-black'
+            className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-transform active:scale-[0.98] ${
+              i === chip
+                ? 'bg-ink text-white'
+                : 'border border-hairline bg-white text-muted'
             }`}
           >
             {c.label}
@@ -171,9 +173,9 @@ export default function ExploreScreen() {
         {visible.map((post, i) => (
           <div
             key={post.id}
-            className="mb-3 break-inside-avoid border-2 border-black bg-white shadow-hard-sm"
+            className="shadow-soft-sm mb-3 break-inside-avoid overflow-hidden rounded-xl border border-hairline bg-white"
           >
-            <div className="relative border-b-2 border-black">
+            <div className="relative">
               <SmartImage
                 src={post.image}
                 alt={post.caption}
@@ -182,13 +184,13 @@ export default function ExploreScreen() {
               {/* The attention model never labels discovery — that would
                   remind you there's a world outside the wall. */}
               {discoveryIds.has(post.id) && model !== 'attention' && (
-                <span className="absolute right-2 top-2 border-2 border-black bg-brand px-1.5 py-0.5 font-display text-[10px] font-bold uppercase text-white">
-                  {model === 'public' ? 'one step out' : 'new for you'}
+                <span className="absolute right-2 top-2 rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold text-white">
+                  {model === 'public' ? 'One step out' : 'New for you'}
                 </span>
               )}
             </div>
             <div className="p-2.5">
-              <p className="line-clamp-2 text-xs leading-snug text-black">
+              <p className="line-clamp-2 text-xs leading-snug text-ink">
                 {post.caption}
               </p>
               <div className="mt-2 flex items-center justify-between">
@@ -198,13 +200,13 @@ export default function ExploreScreen() {
                 </span>
                 {/* Public model shows no like-counts in discovery. */}
                 {model !== 'public' && (
-                  <span className="flex items-center gap-1 text-[11px] tabular-nums text-muted">
+                  <span className="tnum flex items-center gap-1 text-[11px] text-muted">
                     <Heart className="h-3 w-3" />
                     {compact(post.likes)}
                   </span>
                 )}
               </div>
-              <span className="mt-2 inline-block border-2 border-black bg-white px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-tight text-black">
+              <span className="mt-2 inline-block rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-brand">
                 {topicMeta[post.primaryTopic].label}
               </span>
             </div>
@@ -215,11 +217,11 @@ export default function ExploreScreen() {
       {/* Empty state when a search finds nothing */}
       {visible.length === 0 && (
         <div className="px-6 py-12 text-center">
-          <p className="font-display text-lg font-bold uppercase tracking-tight text-black">
+          <p className="font-display text-lg font-bold tracking-[-0.01em] text-ink">
             Nothing here
           </p>
           <p className="mt-1 text-sm text-muted">
-            Try another word — the wall re-filters as you type.
+            Try another word — results update as you type.
           </p>
         </div>
       )}

@@ -51,10 +51,10 @@ export default function PlatformModelLab({
 
   return (
     <div className="animate-fade-up absolute inset-0 z-40 flex flex-col bg-white">
-      <header className="flex items-center justify-between border-b-4 border-black bg-white px-4 py-3 sm:mt-7">
+      <header className="flex items-center justify-between border-b border-hairline bg-white px-4 py-3 sm:mt-7">
         <div>
-          <h2 className="font-display text-lg font-bold uppercase tracking-tight text-black">
-            Platform Model Lab
+          <h2 className="font-display text-lg font-bold tracking-[-0.01em] text-ink">
+            Platform model lab
           </h2>
           <p className="text-[11px] text-muted">
             Same you, same posts — three ways of making money.
@@ -62,7 +62,7 @@ export default function PlatformModelLab({
         </div>
         <button
           onClick={onClose}
-          className="border-2 border-black bg-white px-2.5 py-1 font-display text-[11px] font-bold uppercase text-black active:translate-x-0.5 active:translate-y-0.5"
+          className="rounded-full border border-hairline bg-white px-3 py-1 text-xs font-medium text-ink transition-transform active:scale-[0.98]"
         >
           Done
         </button>
@@ -82,21 +82,23 @@ export default function PlatformModelLab({
                     onSwitchModel(m.id)
                   }
                 }}
-                className={`flex items-center gap-3 border-2 border-black p-3 text-left transition-transform active:translate-x-0.5 active:translate-y-0.5 ${
-                  active ? 'bg-black text-white' : 'bg-white text-black shadow-hard-sm'
+                className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-transform active:scale-[0.98] ${
+                  active
+                    ? 'border-transparent bg-ink text-white'
+                    : 'shadow-soft-sm border-hairline bg-white text-ink'
                 }`}
               >
                 <span
-                  className="h-8 w-8 shrink-0 border-2 border-black"
+                  className="h-8 w-8 shrink-0 rounded-lg"
                   style={{ background: m.accent }}
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block font-display text-sm font-bold uppercase tracking-tight">
+                  <span className="block font-display text-sm font-semibold">
                     {m.name}
-                    {active && ' — running'}
+                    {active && ' · running'}
                   </span>
                   <span
-                    className={`block truncate font-mono text-[10px] uppercase tracking-tight ${
+                    className={`block truncate text-xs ${
                       active ? 'text-white/70' : 'text-muted'
                     }`}
                   >
@@ -109,14 +111,12 @@ export default function PlatformModelLab({
         </div>
 
         {/* Comparison */}
-        <div className="mt-5 border-2 border-black bg-white shadow-hard-sm">
-          <div className="flex items-center justify-between border-b-2 border-black px-3 py-2">
-            <h3 className="font-display text-xs font-bold uppercase tracking-widest text-black">
-              Prototype session observations
+        <div className="shadow-soft mt-5 overflow-hidden rounded-xl border border-hairline bg-white">
+          <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
+            <h3 className="text-xs font-semibold text-ink">
+              Session observations
             </h3>
-            <span className="font-mono text-[9px] uppercase text-muted">
-              local · simulated
-            </span>
+            <span className="text-[10px] text-faint">local · simulated</span>
           </div>
 
           {sampled.length === 0 ? (
@@ -128,19 +128,19 @@ export default function PlatformModelLab({
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr>
-                    <th className="border-b-2 border-black px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-widest text-muted">
+                    <th className="border-b border-hairline px-3 py-2 text-[10px] font-medium text-faint">
                       Latest session
                     </th>
                     {models.map((m) => (
                       <th
                         key={m.id}
-                        className="border-b-2 border-black px-2 py-2 text-center"
+                        className="border-b border-hairline px-2 py-2 text-center"
                       >
                         <span
-                          className="mx-auto block h-2.5 w-2.5 border border-black"
+                          className="mx-auto block h-2.5 w-2.5 rounded-full"
                           style={{ background: m.accent }}
                         />
-                        <span className="mt-1 block font-mono text-[9px] font-bold uppercase tracking-tight text-black">
+                        <span className="mt-1 block text-[10px] font-medium text-muted">
                           {m.short}
                         </span>
                       </th>
@@ -149,8 +149,8 @@ export default function PlatformModelLab({
                 </thead>
                 <tbody>
                   {ROWS.map((row) => (
-                    <tr key={row.label} className="border-b border-black/15">
-                      <td className="px-3 py-2 font-display text-[11px] font-bold text-black">
+                    <tr key={row.label} className="border-b border-hairline last:border-b-0">
+                      <td className="px-3 py-2 text-[11px] font-medium text-ink">
                         {row.label}
                       </td>
                       {models.map((m) => {
@@ -158,7 +158,7 @@ export default function PlatformModelLab({
                         return (
                           <td
                             key={m.id}
-                            className="px-2 py-2 text-center font-mono text-[11px] tabular-nums text-black"
+                            className="tnum px-2 py-2 text-center text-[11px] text-ink"
                           >
                             {s?.posts ? row.get(s) : '—'}
                           </td>
@@ -172,10 +172,9 @@ export default function PlatformModelLab({
           )}
         </div>
 
-        <p className="mt-3 pb-2 text-[11px] leading-snug text-muted">
-          These observations are generated locally by this prototype to make
-          incentive structures comparable. They are not scientific
-          measurements and don't claim psychological outcomes.
+        <p className="mt-3 pb-2 text-[11px] leading-snug text-faint">
+          Generated locally by this prototype to make incentives comparable —
+          not scientific measurements.
         </p>
       </div>
     </div>

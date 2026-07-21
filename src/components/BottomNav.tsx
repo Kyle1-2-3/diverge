@@ -23,8 +23,8 @@ export default function BottomNav({
 
   const label = (text: string, isActive: boolean) => (
     <span
-      className={`mt-0.5 block text-center font-mono text-[8px] font-bold uppercase tracking-tight ${
-        isActive ? 'text-black' : 'text-gray-400'
+      className={`mt-0.5 block text-center text-[10px] font-medium ${
+        isActive ? 'text-ink' : 'text-faint'
       }`}
     >
       {text}
@@ -32,10 +32,10 @@ export default function BottomNav({
   )
 
   return (
-    <nav className="z-30 flex shrink-0 items-start justify-around border-t-4 border-black bg-white px-6 pb-2 pt-2">
+    <nav className="z-30 flex shrink-0 items-start justify-around border-t border-hairline bg-white px-6 pb-2 pt-2">
       <button
         onClick={() => onChange('home')}
-        className={`p-1 transition-colors ${active === 'home' ? 'text-black' : 'text-gray-400'}`}
+        className={`p-1 transition-colors ${active === 'home' ? 'text-ink' : 'text-faint'}`}
         aria-label="Home"
       >
         <Home
@@ -47,7 +47,7 @@ export default function BottomNav({
 
       <button
         onClick={() => onChange('explore')}
-        className={`p-1 transition-colors ${active === 'explore' ? 'text-black' : 'text-gray-400'}`}
+        className={`p-1 transition-colors ${active === 'explore' ? 'text-ink' : 'text-faint'}`}
         aria-label="Explore"
       >
         <Compass
@@ -62,7 +62,7 @@ export default function BottomNav({
           name="You"
           dark={active === 'you'}
           className={`mx-auto h-7 w-7 text-[10px] ${
-            active === 'you' ? 'shadow-hard-sm' : 'opacity-70'
+            active === 'you' ? '' : 'opacity-70'
           }`}
         />
         {label('You', active === 'you')}
