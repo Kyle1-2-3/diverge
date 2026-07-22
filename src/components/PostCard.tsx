@@ -61,7 +61,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
   const [showWhy, setShowWhy] = useState(false)
   const [showComments, setShowComments] = useState(false)
   const [showPaths, setShowPaths] = useState(false)
-  const [showTranslation, setShowTranslation] = useState(false)
+  const [showOriginal, setShowOriginal] = useState(false)
   const [slide, setSlide] = useState(0)
   const [burst, setBurst] = useState(false) // double-tap heart animation
   const lastTap = useRef(0)
@@ -82,9 +82,12 @@ export default function PostCard({ post, reason }: PostCardProps) {
   const commentCount = post.comments + (comments[post.id]?.length ?? 0)
   const images = [post.image, ...(post.extraImages ?? [])]
   const aspectClass = ASPECT[post.aspect ?? 'portrait']
-  // "See translation" appears only on posts written in the other language.
-  const canTranslate =
+  // Posts written in the other language display their translation by default
+  // (like real feeds auto-translate); the original is always one tap away.
+  const translated =
     post.translation !== undefined && (post.lang ?? 'en') !== lang
+  const captionText =
+    translated && !showOriginal ? post.translation! : post.caption
 
   /** Every explicit feedback action counts as a "choice" in the session log. */
   const trackChoice = () =>
@@ -374,23 +377,18 @@ export default function PostCard({ post, reason }: PostCardProps) {
             {t('post.likedBy', { name: post.likedBy })}
           </p>
         )}
-        {post.caption && (
-          <p className="mt-1 text-sm leading-snug text-ink">
-            <span className="font-semibold">{post.handle}</span> {post.caption}
+        {captionText && (
+          <p className="mt-1 whitespace-pre-line text-sm leading-snug text-ink">
+            <span className="font-semibold">{post.handle}</span> {captionText}
           </p>
         )}
-        {canTranslate && (
+        {translated && post.caption && (
           <button
-            onClick={() => setShowTranslation((v) => !v)}
+            onClick={() => setShowOriginal((v) => !v)}
             className="mt-1 block text-xs font-semibold text-muted"
           >
-            {showTranslation ? t('post.hideTranslation') : t('post.seeTranslation')}
+            {showOriginal ? t('post.seeTranslation') : t('post.seeOriginal')}
           </button>
-        )}
-        {canTranslate && showTranslation && (
-          <p className="mt-1 text-sm leading-snug text-muted">
-            {post.translation}
-          </p>
         )}
 
         {/* Perspective Paths — quiet, and only where they genuinely help. */}

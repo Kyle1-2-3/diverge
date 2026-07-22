@@ -25,6 +25,19 @@ const LANGS: { id: Lang; label: string }[] = [
   { id: 'ja', label: '日本語' },
 ]
 
+/** The mock user's own grid — curated photos matching their interests. */
+const GRID_PHOTOS: [string, number][] = [
+  ['sunset', 6],
+  ['noodle', 7],
+  ['headphones', 5],
+  ['mountain', 5],
+  ['sneakers', 6],
+  ['latte', 6],
+  ['art', 6],
+  ['ocean', 2],
+  ['book', 5],
+]
+
 /**
  * The "You" tab — where each business model tells you who you are:
  *  - attention:    a creator dashboard. You are a channel; keep the numbers up.
@@ -402,10 +415,10 @@ export default function ProfileScreen({
 
       {gridTab === 'posts' ? (
         <div className="grid grid-cols-3 gap-1 px-1 pt-1">
-          {u.grid.map((_, i) => (
+          {GRID_PHOTOS.map(([tag, lock], i) => (
             <div key={i} className="aspect-square overflow-hidden rounded-md">
               <img
-                src={`https://picsum.photos/seed/divgrid${i}/400/400`}
+                src={`https://loremflickr.com/400/400/${tag}?lock=${lock}`}
                 alt=""
                 loading="lazy"
                 className="h-full w-full object-cover"

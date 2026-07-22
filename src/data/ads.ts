@@ -13,7 +13,8 @@ export interface Ad {
   cta: string
 }
 
-const photo = (seed: string) => `https://picsum.photos/seed/${seed}/800/1000`
+const photo = (tags: string, lock: number) =>
+  `https://loremflickr.com/800/1000/${tags}?lock=${lock}`
 
 export const ads: Ad[] = [
   {
@@ -23,7 +24,7 @@ export const ads: Ad[] = [
     tagline: 'Sparkling energy water',
     caption:
       'that 3pm crash? gone. ✨ GlowFizz keeps you going so you never have to stop. 40% off with code SCROLL40 — today only ⏰',
-    image: photo('divadfizz'),
+    image: photo('drink', 6),
     cta: 'Shop now',
   },
   {
@@ -33,7 +34,7 @@ export const ads: Ad[] = [
     tagline: 'Drops every Friday',
     caption:
       'the drop everyone on your feed is wearing 🔥 restocked once. when they’re gone, they’re gone.',
-    image: photo('divadkicks'),
+    image: photo('sneakers', 3),
     cta: 'Get yours',
   },
   {
@@ -43,7 +44,7 @@ export const ads: Ad[] = [
     tagline: 'New drops daily',
     caption:
       '2,000 new styles added TODAY 🛍️ if your fit isn’t from this week, is it even a fit? free shipping ends tonight ⏰',
-    image: photo('divadhaul'),
+    image: photo('shopping', 1),
     cta: 'Shop the haul',
   },
   {
@@ -53,7 +54,7 @@ export const ads: Ad[] = [
     tagline: 'Season 4 just dropped',
     caption:
       'all 10 episodes. right now. you weren’t doing anything tomorrow anyway 📺 first month free.',
-    image: photo('divadbinge'),
+    image: photo('television', 6),
     cta: 'Start watching',
   },
   {
@@ -63,7 +64,7 @@ export const ads: Ad[] = [
     tagline: 'The camera that never sleeps',
     caption:
       'your memories deserve 200 megapixels. trade in today — your friends already did 📸',
-    image: photo('divadphone'),
+    image: photo('camera', 7),
     cta: 'Trade in',
   },
   {
@@ -73,7 +74,7 @@ export const ads: Ad[] = [
     tagline: 'Just one more level',
     caption:
       'your daily bonus expires in 2 hours ⏰ 50 free spins if you log in NOW. everyone in your area is playing 🎮',
-    image: photo('divadgame'),
+    image: photo('computer', 4),
     cta: 'Play free',
   },
   {
@@ -83,7 +84,7 @@ export const ads: Ad[] = [
     tagline: 'Bubble tea in 15 min',
     caption:
       'craving hits at 11pm? we know. we literally know 🧋 first order free — tonight only.',
-    image: photo('divadboba'),
+    image: photo('latte', 2),
     cta: 'Order now',
   },
   {
@@ -93,7 +94,7 @@ export const ads: Ad[] = [
     tagline: 'Don’t break the chain',
     caption:
       'day 1 is easy. day 100 is who you become 💪 your friends can see your streak — can they see you quit?',
-    image: photo('divadfit'),
+    image: photo('gym', 10),
     cta: 'Start streak',
   },
   {
@@ -103,7 +104,7 @@ export const ads: Ad[] = [
     tagline: 'As seen everywhere',
     caption:
       'the lip oil your feed won’t shut up about 💋 back in stock for 24 hours. after that? who knows.',
-    image: photo('divadgloss'),
+    image: photo('skincare', 6),
     cta: 'Get it first',
   },
 ]

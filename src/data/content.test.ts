@@ -75,11 +75,17 @@ describe('content texture', () => {
     expect(posts.some((p) => (p.extraImages?.length ?? 0) > 0)).toBe(true)
   })
 
-  it('mixes languages, without auto-translating user content', () => {
+  it('mixes languages', () => {
     const japanese = posts.filter((p) => p.lang === 'ja')
     expect(japanese.length).toBeGreaterThanOrEqual(4)
-    // Every Japanese post ships a predefined translation for the tap-to-see UI.
-    for (const p of japanese) expect(p.translation).toBeTruthy()
+  })
+
+  it('every captioned post is readable in both languages', () => {
+    // Captions auto-display in the UI language when it differs from the
+    // post's language, so every non-empty caption needs a translation.
+    for (const p of posts) {
+      if (p.caption) expect(p.translation, p.id).toBeTruthy()
+    }
   })
 })
 

@@ -162,7 +162,8 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
             : {
                 ...p,
                 id: `${p.id}~${page}`,
-                image: p.image.replace('/seed/', `/seed/p${page}`),
+                // Same tags, different lock → a fresh matching photo per page.
+                image: p.image.replace('?lock=', `?lock=${page}9`),
                 timeAgo: 'now',
               }
         out.push({ kind: 'post', key: post.id, post })

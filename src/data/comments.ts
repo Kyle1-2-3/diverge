@@ -147,4 +147,46 @@ export const mockComments: Record<string, MockComment[]> = {
     { handle: 'ecofutures', text: 'homegrown is homegrown 🍅', timeAgo: '20h' },
     { handle: 'mei.mochi', text: 'update us when it’s harvest day', timeAgo: '16h' },
   ],
+  p67: [
+    { handle: 'aoi.club', text: 'submitting this photo as evidence', timeAgo: '1h' },
+    { handle: 'yujin_kim', text: 'you both look great pls 😭', timeAgo: '1h' },
+    { handle: 'mei.mochi', text: '@yujin_kim she gets ZERO photo credit', timeAgo: '50m' },
+    { handle: 'sana.days', text: 'lawsuit pending 🧑‍⚖️', timeAgo: '30m' },
+  ],
+  p68: [
+    { handle: 'leo.kicks', text: '🔥🔥🔥🔥🔥', timeAgo: '4h' },
+    { handle: 'fridaynightfc', text: 'the whole league is watching. GO', timeAgo: '4h' },
+    { handle: 'ren_kudo', text: '泣いた', timeAgo: '3h' },
+    { handle: 'courtside.jo', text: 'that second goal was unreal', timeAgo: '2h' },
+  ],
+  p69: [
+    { handle: 'mei.mochi', text: 'ハイライト見てきた、買います', timeAgo: '8h' },
+    { handle: 'aoi.club', text: 'does it survive a full school day tho?', timeAgo: '7h' },
+    { handle: 'nene.make', text: '@aoi.club 6時間目まではもった！体育は無理', timeAgo: '6h' },
+  ],
+  p70: [
+    { handle: 'pixel.bento', text: 'your "muddy shading" is my final render 😭', timeAgo: '12h' },
+    { handle: 'inkrei', text: 'the gauntlet looks fine?? artists see ghosts', timeAgo: '11h' },
+    { handle: 'yuki.pics', text: 'sir whiskers pt 2 when', timeAgo: '9h' },
+    { handle: 'frame.works', text: 'posting the imperfect ones is how you get good. respect', timeAgo: '8h' },
+  ],
+  p73: [
+    { handle: 'yujin_kim', text: 'WHAT SONG', timeAgo: '25m' },
+    { handle: 'marcus.wav', text: '@yujin_kim encore of the setlist closer, audio in my story', timeAgo: '20m' },
+    { handle: 'gigfliers', text: 'blurriest photo = best night. rule', timeAgo: '10m' },
+  ],
+  p74: [
+    { handle: 'sana.days', text: 'おつかれ！！！カラオケ行こ', timeAgo: '3h' },
+    { handle: 'daichi.jpg', text: 'meanwhile i have two more 😐', timeAgo: '3h' },
+    { handle: 'riko.o3', text: '@daichi.jpg がんばれ（他人事）', timeAgo: '2h' },
+  ],
+  p75: [
+    { handle: 'tomo.eats', text: 'corn soup at the gym vending machine is elite actually', timeAgo: '9h' },
+    { handle: 'hana.notes', text: 'they know exactly what they’re doing', timeAgo: '8h' },
+  ],
+  p76: [
+    { handle: 'sana.days', text: 'the ratio of study to parfait tho 🤨', timeAgo: '22h' },
+    { handle: 'hana.notes', text: '@sana.days 45 minutes counts as studying', timeAgo: '21h' },
+    { handle: 'riko.o3', text: 'balance queen', timeAgo: '18h' },
+  ],
 }

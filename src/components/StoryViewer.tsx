@@ -51,7 +51,7 @@ export default function StoryViewer({ initialId, onClose }: StoryViewerProps) {
       {/* The story photo. Keyed on the story so each one fades in fresh. */}
       <SmartImage
         key={story.id}
-        src={`https://picsum.photos/seed/divstory-${story.id}/800/1400`}
+        src={`https://loremflickr.com/800/1400/${story.tag ?? 'city'}?lock=${story.lock ?? 77 + index}`}
         alt={`${story.name}'s story`}
         className="absolute inset-0"
       />

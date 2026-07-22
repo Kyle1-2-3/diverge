@@ -115,6 +115,7 @@ export default function ExploreScreen() {
       (p) =>
         !q ||
         p.caption.toLowerCase().includes(q) ||
+        (p.translation?.toLowerCase().includes(q) ?? false) ||
         p.handle.toLowerCase().includes(q) ||
         p.location.toLowerCase().includes(q) ||
         t(`topic.${p.primaryTopic}`).toLowerCase().includes(q),

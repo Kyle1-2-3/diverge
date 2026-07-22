@@ -10,6 +10,9 @@ export interface Story {
   isYou?: boolean
   /** Stories from outside the user's usual circle get a subtle sparkle. */
   outside?: boolean
+  /** LoremFlickr tag + lock so the story photo matches who posted it. */
+  tag?: string
+  lock?: number
 }
 
 export const stories: Story[] = [
@@ -21,25 +24,25 @@ export const stories: Story[] = [
     fresh: false,
     isYou: true,
   },
-  { id: 's1', name: 'mira', avatar: '🧥', ring: 'from-pink-400 to-fuchsia-500', fresh: true },
-  { id: 's2', name: 'yujin', avatar: '🎧', ring: 'from-violet-400 to-purple-500', fresh: true },
+  { id: 's1', name: 'mira', avatar: '🧥', ring: 'from-pink-400 to-fuchsia-500', fresh: true, tag: 'fashion', lock: 10 },
+  { id: 's2', name: 'yujin', avatar: '🎧', ring: 'from-violet-400 to-purple-500', fresh: true, tag: 'karaoke', lock: 2 },
   {
     id: 's3',
     name: 'oaxaca_fest',
     avatar: '🎭',
     ring: 'from-amber-400 to-orange-500',
-    fresh: true,
+    fresh: true, tag: 'parade', lock: 3,
     outside: true,
   },
-  { id: 's4', name: 'kai', avatar: '🏃', ring: 'from-cyan-400 to-blue-500', fresh: true },
+  { id: 's4', name: 'kai', avatar: '🏃', ring: 'from-cyan-400 to-blue-500', fresh: true, tag: 'running', lock: 4 },
   {
     id: 's5',
     name: 'greengrid',
     avatar: '⚡',
     ring: 'from-lime-400 to-emerald-500',
-    fresh: true,
+    fresh: true, tag: 'solarpanel', lock: 7,
     outside: true,
   },
-  { id: 's6', name: 'noodle', avatar: '🍜', ring: 'from-orange-400 to-rose-400', fresh: false },
-  { id: 's7', name: 'futurelab', avatar: '🤖', ring: 'from-indigo-400 to-violet-500', fresh: false },
+  { id: 's6', name: 'noodle', avatar: '🍜', ring: 'from-orange-400 to-rose-400', fresh: false, tag: 'noodle', lock: 5 },
+  { id: 's7', name: 'futurelab', avatar: '🤖', ring: 'from-indigo-400 to-violet-500', fresh: false, tag: 'robot', lock: 4 },
 ]
