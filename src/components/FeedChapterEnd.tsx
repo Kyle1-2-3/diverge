@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocale } from '../i18n'
 import CoachMark from './CoachMark'
 
 // ---------------------------------------------------------------------------
@@ -6,13 +7,22 @@ import CoachMark from './CoachMark'
 // always one tap away — the point is conscious continuation, not restriction.
 // ---------------------------------------------------------------------------
 
-const FEELINGS = [
-  'Worth my time',
-  'Fun',
-  'I found something new',
-  'Repetitive',
-  'Too intense',
-  'Not relevant',
+/** Stable ids stored in session stats; labels localize via `feeling.<id>`. */
+export type FeelingId =
+  | 'worth'
+  | 'fun'
+  | 'new'
+  | 'repetitive'
+  | 'intense'
+  | 'notRelevant'
+
+const FEELINGS: FeelingId[] = [
+  'worth',
+  'fun',
+  'new',
+  'repetitive',
+  'intense',
+  'notRelevant',
 ]
 
 interface FeedChapterEndProps {
@@ -22,7 +32,7 @@ interface FeedChapterEndProps {
   friends: number
   canContinue: boolean
   /** null hides the reflection strip (already answered this session). */
-  onFeeling: ((feeling: string) => void) | null
+  onFeeling: ((feeling: FeelingId) => void) | null
   onContinue: () => void
   /** Member: change intention. Public: adjust the mix. */
   changeLabel: string
@@ -42,12 +52,16 @@ export default function FeedChapterEnd({
   onChange,
   onClose,
 }: FeedChapterEndProps) {
-  const [picked, setPicked] = useState<string | null>(null)
+  const { t } = useLocale()
+  const [picked, setPicked] = useState<FeelingId | null>(null)
 
   const summary = [
-    friends > 0 && `${friends} from friends`,
-    `${familiar} familiar`,
-    discoveries > 0 && `${discoveries} ${discoveries === 1 ? 'discovery' : 'discoveries'}`,
+    friends > 0 && t('chapterEnd.fromFriends', { n: friends }),
+    t('chapterEnd.familiar', { n: familiar }),
+    discoveries > 0 &&
+      t(discoveries === 1 ? 'chapterEnd.discovery' : 'chapterEnd.discoveries', {
+        n: discoveries,
+      }),
   ]
     .filter(Boolean)
     .join(' · ')
@@ -55,42 +69,38 @@ export default function FeedChapterEnd({
   return (
     <div className="animate-fade-up px-5 pb-8 pt-9">
       <p className="text-xs font-semibold text-brand">
-        Chapter {chapter} · complete
+        {t('chapterEnd.kicker', { n: chapter })}
       </p>
       <h3 className="mt-1 font-display text-3xl font-bold leading-[1.05] tracking-[-0.02em] text-ink">
         {canContinue ? (
           <>
-            You're
+            {t('chapterEnd.caughtUp1')}
             <br />
-            caught up.
+            {t('chapterEnd.caughtUp2')}
           </>
         ) : (
           <>
-            That's
+            {t('chapterEnd.everything1')}
             <br />
-            everything.
+            {t('chapterEnd.everything2')}
           </>
         )}
       </h3>
       <p className="mt-3 max-w-[19rem] text-sm leading-relaxed text-muted">
-        {summary}. {canContinue
-          ? 'Keep going, change direction, or leave it here.'
-          : 'Nothing new is waiting — a good moment to be somewhere else.'}
+        {summary}.{' '}
+        {canContinue ? t('chapterEnd.continueHint') : t('chapterEnd.dryHint')}
       </p>
 
       <div className="mt-4">
-        <CoachMark flag="chapter-end">
-          Feeds here end on purpose — nothing auto-loads. Continuing is your
-          choice.
-        </CoachMark>
+        <CoachMark flag="chapter-end">{t('coach.chapterEnd')}</CoachMark>
       </div>
 
       {/* Skippable one-tap reflection */}
       {onFeeling && (
         <div className="mt-5">
           <p className="text-xs font-medium text-muted">
-            How did this stretch feel?{' '}
-            <span className="text-faint">(optional)</span>
+            {t('chapterEnd.feelingPrompt')}{' '}
+            <span className="text-faint">{t('chapterEnd.optional')}</span>
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {FEELINGS.map((f) => (
@@ -109,14 +119,12 @@ export default function FeedChapterEnd({
                       : 'border border-hairline bg-white text-ink'
                 }`}
               >
-                {f}
+                {t(`feeling.${f}`)}
               </button>
             ))}
           </div>
           {picked && (
-            <p className="mt-2 text-xs text-faint">
-              Noted — the next chapter listens.
-            </p>
+            <p className="mt-2 text-xs text-faint">{t('chapterEnd.noted')}</p>
           )}
         </div>
       )}
@@ -127,7 +135,7 @@ export default function FeedChapterEnd({
             onClick={onContinue}
             className="w-full rounded-full bg-ink py-3.5 font-display text-sm font-semibold text-white transition-transform active:scale-[0.97]"
           >
-            Continue another chapter
+            {t('chapterEnd.continue')}
           </button>
         )}
         <button
@@ -140,7 +148,7 @@ export default function FeedChapterEnd({
           onClick={onClose}
           className="w-full rounded-full bg-brand py-3 font-display text-sm font-semibold text-white transition-transform active:scale-[0.97]"
         >
-          Close session
+          {t('chapterEnd.closeSession')}
         </button>
       </div>
     </div>

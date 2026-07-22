@@ -4,7 +4,8 @@ import type { Ad } from '../data/ads'
 import { ads } from '../data/ads'
 import { intentionById } from '../data/intentions'
 import { posts } from '../data/posts'
-import { topicMeta } from '../data/topics'
+import { useLocale } from '../i18n'
+import type { TranslationKey } from '../i18n/translations'
 import {
   buildInterests,
   composeChapter,
@@ -21,7 +22,7 @@ import StoriesBar from './StoriesBar'
 import StoryViewer from './StoryViewer'
 import NotificationsSheet from './NotificationsSheet'
 import AlgorithmPanel from './AlgorithmPanel'
-import FeedChapterEnd from './FeedChapterEnd'
+import FeedChapterEnd, { type FeelingId } from './FeedChapterEnd'
 import SessionRecap from './SessionRecap'
 import CoachMark from './CoachMark'
 import PostCard from './PostCard'
@@ -40,12 +41,12 @@ type FeedItem =
   | { kind: 'ad'; key: string; ad: Ad }
 
 /** Fake engagement pings for the attention model. */
-const PINGS = [
-  '❤️ yujin_kim liked your post',
-  '🔥 your post is getting attention — 41 new views',
-  '👀 mira.styles viewed your profile',
-  '❤️ coachreyes and 12 others liked your post',
-  '✨ you appeared in search 6 times today',
+const PING_KEYS: TranslationKey[] = [
+  'ping.liked',
+  'ping.views',
+  'ping.profile',
+  'ping.likedMany',
+  'ping.search',
 ]
 
 /**
@@ -55,6 +56,7 @@ const PINGS = [
  *  - public:       transparent chapters, wider mix, the dial one tap away.
  */
 export default function Feed({ intentionId, onChangeMood }: FeedProps) {
+  const { t } = useLocale()
   const { hidden, liked, saved, showToast } = useInteractions()
   const { model, diversity, unread, bumpUnread, clearUnread, sessionMinutes } =
     useModel()
@@ -65,7 +67,7 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
   const [algoOpen, setAlgoOpen] = useState(false)
   const [recapOpen, setRecapOpen] = useState(false)
   const [closed, setClosed] = useState(false)
-  const [feeling, setFeeling] = useState<string | null>(null)
+  const [feeling, setFeeling] = useState<FeelingId | null>(null)
   const [bias, setBias] = useState<'novelty' | 'calm' | undefined>(undefined)
 
   // ---- ranking context ----------------------------------------------------
@@ -93,8 +95,6 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
   useEffect(() => {
     ctxRef.current = ctx
   }, [ctx])
-
-  const intention = intentionById(intentionId)
 
   // ---- chapters (subscription + public) -----------------------------------
   const [chapters, setChapters] = useState<Post[][]>(() =>
@@ -193,23 +193,23 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
   // Attention model: manufactured urgency, delivered on a schedule.
   useEffect(() => {
     if (model !== 'attention') return
-    const t = window.setInterval(() => {
-      showToast({ message: PINGS[Math.floor(Math.random() * PINGS.length)] })
+    const timer = window.setInterval(() => {
+      showToast({
+        message: t(PING_KEYS[Math.floor(Math.random() * PING_KEYS.length)]),
+      })
       bumpUnread()
     }, 22000)
-    return () => window.clearInterval(t)
+    return () => window.clearInterval(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model])
 
   // Subscription model: one gentle break reminder, then silence.
   useEffect(() => {
     if (model !== 'subscription') return
-    const t = window.setTimeout(() => {
-      showToast({
-        message: 'You’ve been here a while. The feed keeps until tomorrow 🌿',
-      })
+    const timer = window.setTimeout(() => {
+      showToast({ message: t('toast.break') })
     }, 180000)
-    return () => window.clearTimeout(t)
+    return () => window.clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model])
 
@@ -253,10 +253,10 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapters, items, model])
 
-  const onFeeling = (f: string) => {
+  const onFeeling = (f: FeelingId) => {
     setFeeling(f)
-    if (f === 'Repetitive') setBias('novelty')
-    if (f === 'Too intense') setBias('calm')
+    if (f === 'repetitive') setBias('novelty')
+    if (f === 'intense') setBias('calm')
     updateSession(model, (s) => ({ ...s, feeling: f, choices: s.choices + 1 }))
   }
 
@@ -282,17 +282,19 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
   if (closed) {
     return (
       <div className="flex h-full flex-col items-center justify-center bg-white px-8 text-center">
-        <p className="text-xs font-medium text-faint">Session ended</p>
+        <p className="text-xs font-medium text-faint">
+          {t('feed.sessionEnded')}
+        </p>
         <h2 className="mt-2 font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-ink">
-          Nothing here is
+          {t('feed.closedTitle1')}
           <br />
-          counting your absence.
+          {t('feed.closedTitle2')}
         </h2>
         <button
           onClick={startNewSession}
           className="mt-8 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
         >
-          Start a new session
+          {t('feed.newSession')}
         </button>
       </div>
     )
@@ -309,7 +311,7 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
               onClick={onChangeMood}
               className="flex items-center gap-1.5 rounded-full border border-hairline bg-white px-3 py-1 text-xs font-medium text-ink transition-transform active:scale-[0.98]"
             >
-              {intention.emoji} {intention.title}
+              {intentionEmoji(intentionId)} {t(`intent.${intentionId}.title`)}
             </button>
           )}
           {model === 'public' && (
@@ -317,7 +319,7 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
               onClick={() => setAlgoOpen(true)}
               className="flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand transition-transform active:scale-[0.98]"
             >
-              ◐ Mix · algorithm
+              {t('feed.mixAlgo')}
             </button>
           )}
           <button
@@ -326,7 +328,7 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
               clearUnread()
             }}
             className="relative text-ink"
-            aria-label="Notifications"
+            aria-label={t('nav.notifications')}
           >
             <Heart className="h-6 w-6" />
             {model === 'attention' && unread > 0 && (
@@ -348,9 +350,11 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
           className="flex w-full items-center justify-between bg-brand-soft px-4 py-2 text-left"
         >
           <span className="text-xs font-medium text-brand">
-            Ranked for balance, not engagement
+            {t('feed.publicBanner')}
           </span>
-          <span className="text-xs font-semibold text-brand">How →</span>
+          <span className="text-xs font-semibold text-brand">
+            {t('feed.publicBannerHow')}
+          </span>
         </button>
       )}
 
@@ -372,7 +376,7 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
           >
             <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-brand" />
             <span className="text-xs font-medium text-faint">
-              Finding more for you…
+              {t('feed.findingMore')}
             </span>
           </div>
         </>
@@ -383,7 +387,7 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
               <div key={ci} className="divide-y divide-hairline">
                 {ci > 0 && (
                   <p className="tnum bg-white px-4 py-2 text-center text-xs font-medium text-faint">
-                    Chapter {ci + 1}
+                    {t('feed.chapter', { n: ci + 1 })}
                   </p>
                 )}
                 {chapter.filter(visible).map((post) => (
@@ -392,10 +396,10 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
                     {post.id === firstDiscovery?.id && near && (
                       <div className="px-3.5 pt-3">
                         <CoachMark flag="adjacent-post">
-                          A step sideways: you're into{' '}
-                          {topicMeta[near].label.toLowerCase()}, and{' '}
-                          {topicMeta[post.primaryTopic].label.toLowerCase()}{' '}
-                          lives next door. The ··· menu tunes it.
+                          {t('coach.adjacent', {
+                            near: t(`topic.${near}`),
+                            topic: t(`topic.${post.primaryTopic}`),
+                          })}
                         </CoachMark>
                       </div>
                     )}
@@ -415,7 +419,9 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
             onFeeling={feeling === null ? onFeeling : null}
             onContinue={continueChapter}
             changeLabel={
-              model === 'subscription' ? 'Change intention' : 'Adjust the mix'
+              model === 'subscription'
+                ? t('chapterEnd.changeIntention')
+                : t('chapterEnd.adjustMix')
             }
             onChange={
               model === 'subscription' ? onChangeMood : () => setAlgoOpen(true)
@@ -447,4 +453,8 @@ export default function Feed({ intentionId, onChangeMood }: FeedProps) {
       )}
     </div>
   )
+}
+
+function intentionEmoji(id: IntentionId): string {
+  return intentionById(id).emoji
 }

@@ -1,5 +1,6 @@
-/* One-font system: Inter carries everything; Space Grotesk survives only in the logo wordmark. */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap');
+/* One-font system: Inter carries everything (Noto Sans JP fills in Japanese);
+   Space Grotesk survives only in the logo wordmark. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap');
 
 /* Tailwind v4 — single import pulls in base, components and utilities. */
 @import 'tailwindcss';
@@ -17,8 +18,12 @@
   --color-canvas: #f6f5f4; /* warm paper behind the phone */
   --color-hairline: #e6e6e6;
 
-  --font-display: 'Inter', ui-sans-serif, sans-serif;
-  --font-sans: 'Inter', ui-sans-serif, sans-serif;
+  --font-display:
+    'Inter', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', ui-sans-serif,
+    sans-serif;
+  --font-sans:
+    'Inter', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', ui-sans-serif,
+    sans-serif;
   --font-logo: 'Space Grotesk', ui-sans-serif, sans-serif;
 }
 

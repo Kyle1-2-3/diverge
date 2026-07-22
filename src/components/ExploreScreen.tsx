@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { Post } from '../types'
 import type { BusinessModel } from '../data/models'
+import { useLocale } from '../i18n'
 import { posts } from '../data/posts'
-import { topicMeta } from '../data/topics'
 import { compact } from '../lib/format'
 import { buildInterests, familiarityOf } from '../lib/recommend'
 import { useInteractions } from '../state/interactions'
@@ -41,6 +41,7 @@ const age = (p: Post) => {
  * with adjacent discoveries — relevant, never random.
  */
 export default function ExploreScreen() {
+  const { t } = useLocale()
   const { model } = useModel()
   const { liked, saved } = useInteractions()
   const [query, setQuery] = useState('')
@@ -65,41 +66,41 @@ export default function ExploreScreen() {
   const cfg = useMemo<ExploreCfg>(() => {
     const configs: Record<BusinessModel, ExploreCfg> = {
       attention: {
-        title: 'For you',
-        placeholder: 'Search (or just keep scrolling)',
+        title: t('explore.attention.title'),
+        placeholder: t('explore.attention.placeholder'),
         note: null,
         chips: [
-          { label: 'For you', test: () => true },
-          { label: '🔥 Viral', test: (p) => p.likes >= 3000 },
-          { label: 'Trending', test: (p) => p.likes >= 2000 },
-          { label: 'Fresh', test: fresh },
+          { label: t('explore.chip.forYou'), test: () => true },
+          { label: t('explore.chip.viral'), test: (p) => p.likes >= 3000 },
+          { label: t('explore.chip.trending'), test: (p) => p.likes >= 2000 },
+          { label: t('explore.chip.fresh'), test: fresh },
         ],
         order: (list) => [...list].sort((a, b) => b.likes - a.likes),
       },
       subscription: {
-        title: 'Search',
-        placeholder: 'What are you looking for?',
-        note: 'Less recommending, more choosing. Newest first.',
+        title: t('explore.subscription.title'),
+        placeholder: t('explore.subscription.placeholder'),
+        note: t('explore.subscription.note'),
         chips: [
-          { label: 'Everything', test: () => true },
-          { label: 'Fresh', test: fresh },
+          { label: t('explore.chip.everything'), test: () => true },
+          { label: t('explore.chip.fresh'), test: fresh },
         ],
         order: (list) => [...list].sort((a, b) => age(a) - age(b)),
       },
       public: {
-        title: 'One step out',
-        placeholder: 'Search every topic…',
-        note: 'Discovery starts one step from your usual — never random.',
+        title: t('explore.public.title'),
+        placeholder: t('explore.public.placeholder'),
+        note: t('explore.public.note'),
         chips: [
-          { label: '→ Near your interests', test: (p) => discoveryIds.has(p.id) },
-          { label: 'Balanced mix', test: () => true },
-          { label: 'Your usual', test: (p) => !discoveryIds.has(p.id) },
+          { label: t('explore.chip.near'), test: (p) => discoveryIds.has(p.id) },
+          { label: t('explore.chip.balanced'), test: () => true },
+          { label: t('explore.chip.usual'), test: (p) => !discoveryIds.has(p.id) },
         ],
         order: (list) => list,
       },
     }
     return configs[model]
-  }, [model, discoveryIds])
+  }, [model, discoveryIds, t])
 
   // No reset-on-model-switch needed: the app remounts this screen per model.
 
@@ -116,7 +117,7 @@ export default function ExploreScreen() {
         p.caption.toLowerCase().includes(q) ||
         p.handle.toLowerCase().includes(q) ||
         p.location.toLowerCase().includes(q) ||
-        topicMeta[p.primaryTopic].label.toLowerCase().includes(q),
+        t(`topic.${p.primaryTopic}`).toLowerCase().includes(q),
     )
 
   return (
@@ -138,17 +139,13 @@ export default function ExploreScreen() {
             <button
               onClick={() => setQuery('')}
               className="text-sm font-semibold text-muted"
-              aria-label="Clear search"
+              aria-label={t('explore.clear')}
             >
               ✕
             </button>
           )}
         </div>
-        {cfg.note && (
-          <p className="mt-2 text-xs text-faint">
-            {cfg.note}
-          </p>
-        )}
+        {cfg.note && <p className="mt-2 text-xs text-faint">{cfg.note}</p>}
       </header>
 
       {/* Topic chips — tap to filter the wall */}
@@ -178,21 +175,23 @@ export default function ExploreScreen() {
             <div className="relative">
               <SmartImage
                 src={post.image}
-                alt={post.caption}
+                alt={post.caption || post.handle}
                 className={`w-full ${heights[i % heights.length]}`}
               />
-              {/* The attention model never labels discovery — that would
-                  remind you there's a world outside the wall. */}
-              {discoveryIds.has(post.id) && model !== 'attention' && (
+              {/* "One step out" only where it's true — and never under the
+                  attention model, which prefers you forget there's an outside. */}
+              {discoveryIds.has(post.id) && model === 'public' && (
                 <span className="absolute right-2 top-2 rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold text-white">
-                  {model === 'public' ? 'One step out' : 'New for you'}
+                  {t('explore.badge.oneStepOut')}
                 </span>
               )}
             </div>
             <div className="p-2.5">
-              <p className="line-clamp-2 text-xs leading-snug text-ink">
-                {post.caption}
-              </p>
+              {post.caption && (
+                <p className="line-clamp-2 text-xs leading-snug text-ink">
+                  {post.caption}
+                </p>
+              )}
               <div className="mt-2 flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-[11px] text-muted">
                   <Avatar name={post.handle} className="h-4 w-4 text-[8px]" />
@@ -206,9 +205,6 @@ export default function ExploreScreen() {
                   </span>
                 )}
               </div>
-              <span className="mt-2 inline-block rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-brand">
-                {topicMeta[post.primaryTopic].label}
-              </span>
             </div>
           </div>
         ))}
@@ -218,11 +214,9 @@ export default function ExploreScreen() {
       {visible.length === 0 && (
         <div className="px-6 py-12 text-center">
           <p className="font-display text-lg font-bold tracking-[-0.01em] text-ink">
-            Nothing here
+            {t('explore.empty.title')}
           </p>
-          <p className="mt-1 text-sm text-muted">
-            Try another word — results update as you type.
-          </p>
+          <p className="mt-1 text-sm text-muted">{t('explore.empty.body')}</p>
         </div>
       )}
     </div>

@@ -1,19 +1,15 @@
 import { useState } from 'react'
+import { useLocale } from '../i18n'
+import type { TranslationKey } from '../i18n/translations'
 
 interface ReflectionScreenProps {
   onDone: () => void
 }
 
-const questions = [
-  { q: 'What surprised you today?', placeholder: 'Something you didn’t expect…' },
-  {
-    q: 'Did you see a perspective you normally wouldn’t?',
-    placeholder: 'A view that wasn’t yours…',
-  },
-  {
-    q: 'Did this feel different from your usual feed?',
-    placeholder: 'Be honest — it’s just for you…',
-  },
+const QUESTIONS: { q: TranslationKey; ph: TranslationKey }[] = [
+  { q: 'reflect.q1', ph: 'reflect.q1ph' },
+  { q: 'reflect.q2', ph: 'reflect.q2ph' },
+  { q: 'reflect.q3', ph: 'reflect.q3ph' },
 ]
 
 /**
@@ -21,6 +17,7 @@ const questions = [
  * only in local state — nothing is saved or sent, which is intentional.
  */
 export default function ReflectionScreen({ onDone }: ReflectionScreenProps) {
+  const { t } = useLocale()
   const [answers, setAnswers] = useState<string[]>(['', '', ''])
   const update = (i: number, v: string) =>
     setAnswers((prev) => prev.map((a, idx) => (idx === i ? v : a)))
@@ -31,33 +28,31 @@ export default function ReflectionScreen({ onDone }: ReflectionScreenProps) {
         onClick={onDone}
         className="absolute right-5 top-9 rounded-full border border-hairline bg-white px-3 py-1 text-xs font-medium text-ink transition-transform active:scale-[0.98]"
       >
-        Close
+        {t('common.close')}
       </button>
 
       <header className="mb-6">
-        <p className="text-xs font-medium text-faint">Reflect</p>
+        <p className="text-xs font-medium text-faint">{t('reflect.kicker')}</p>
         <h2 className="mt-2 font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink">
-          A moment to
+          {t('reflect.title1')}
           <br />
-          look back
+          {t('reflect.title2')}
         </h2>
-        <p className="mt-3 text-sm text-muted">
-          No right answers — nothing is saved.
-        </p>
+        <p className="mt-3 text-sm text-muted">{t('reflect.subtitle')}</p>
       </header>
 
       <div className="space-y-5">
-        {questions.map((item, i) => (
+        {QUESTIONS.map((item, i) => (
           <div key={i}>
             <label className="mb-1.5 block text-sm font-semibold text-ink">
               <span className="tnum mr-1.5 text-faint">{i + 1}.</span>
-              {item.q}
+              {t(item.q)}
             </label>
             <textarea
               value={answers[i]}
               onChange={(e) => update(i, e.target.value)}
               rows={3}
-              placeholder={item.placeholder}
+              placeholder={t(item.ph)}
               className="w-full resize-none rounded-md border border-hairline bg-white p-3 text-sm text-ink outline-none transition-colors placeholder:text-faint focus:border-brand"
             />
           </div>
@@ -69,7 +64,7 @@ export default function ReflectionScreen({ onDone }: ReflectionScreenProps) {
           onClick={onDone}
           className="w-full rounded-full bg-brand py-4 font-display text-base font-semibold text-white transition-transform active:scale-[0.97]"
         >
-          Done
+          {t('common.done')}
         </button>
       </div>
     </div>

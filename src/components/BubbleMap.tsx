@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { GroupId } from '../types'
+import { useLocale } from '../i18n'
 import { getBubbleStats } from '../lib/feed'
 import { useInteractions } from '../state/interactions'
 
@@ -10,18 +11,6 @@ import { useInteractions } from '../state/interactions'
 // Tap any bubble for its numbers. Neutral by design: it describes what
 // shaped your feed — it never grades you.
 // ---------------------------------------------------------------------------
-
-/** Short labels that fit the map. */
-const SHORT: Record<GroupId, string> = {
-  life: 'Friends',
-  fashion: 'Fashion',
-  food: 'Food',
-  sports: 'Sports',
-  art: 'Art',
-  travel: 'Cities',
-  tech: 'Tech',
-  music: 'Music',
-}
 
 // Fixed slot order around the circle, chosen so neighboring hues differ.
 const ORDER: GroupId[] = [
@@ -47,6 +36,7 @@ interface BubbleMapProps {
 }
 
 export default function BubbleMap({ score }: BubbleMapProps) {
+  const { t } = useLocale()
   const { liked, saved, comments } = useInteractions()
   const [selected, setSelected] = useState<GroupId | null>(null)
 
@@ -89,7 +79,7 @@ export default function BubbleMap({ score }: BubbleMapProps) {
         viewBox={`0 0 ${W} ${H}`}
         className="block w-full"
         role="img"
-        aria-label="Map of your interests: eight topic worlds orbiting you, sized by how much you engage with them"
+        aria-label={t('map.aria')}
       >
         {/* Edge of your current bubble — widens as your mix widens. */}
         <circle
@@ -148,7 +138,7 @@ export default function BubbleMap({ score }: BubbleMapProps) {
                 fontWeight="500"
                 fill="#615d59"
               >
-                {SHORT[b.group]}
+                {t(`group.short.${b.group}`)}
               </text>
             </g>
           )
@@ -169,7 +159,7 @@ export default function BubbleMap({ score }: BubbleMapProps) {
           fontWeight="600"
           fill="#fff"
         >
-          You
+          {t('common.you')}
         </text>
       </svg>
 
@@ -182,9 +172,11 @@ export default function BubbleMap({ score }: BubbleMapProps) {
               style={{ background: sel.color }}
             />
             <p className="flex-1 text-[11px] leading-snug text-ink">
-              <span className="font-semibold">{sel.label}</span> —{' '}
-              {sel.feedCount} post{sel.feedCount === 1 ? '' : 's'} around ·{' '}
-              {sel.engaged} you engaged with
+              {t('map.postsAround', {
+                label: t(`group.${sel.group}`),
+                n: sel.feedCount,
+                engaged: sel.engaged,
+              })}
             </p>
             <span
               className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
@@ -193,13 +185,11 @@ export default function BubbleMap({ score }: BubbleMapProps) {
                   : 'border border-hairline bg-white text-muted'
               }`}
             >
-              {sel.inBubble ? 'Close to you' : 'Further out'}
+              {sel.inBubble ? t('map.closeToYou') : t('map.furtherOut')}
             </span>
           </div>
         ) : (
-          <p className="text-[11px] text-muted">
-            Tap a world to see how it fits your feed.
-          </p>
+          <p className="text-[11px] text-muted">{t('map.tapHint')}</p>
         )}
       </div>
     </div>

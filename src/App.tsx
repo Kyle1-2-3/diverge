@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { IntentionId } from './types'
 import type { BusinessModel } from './data/models'
+import { LocaleProvider, useLocale } from './i18n'
 import { InteractionsProvider, useInteractions } from './state/interactions'
 import { ModelProvider, useModel } from './state/model'
 import { PrefsProvider, usePrefs } from './state/prefs'
@@ -24,6 +25,7 @@ import BottomNav, { type Tab } from './components/BottomNav'
 type Phase = 'landing' | 'model' | 'mood' | 'app'
 
 function AppInner() {
+  const { t } = useLocale()
   const { model, setModel } = useModel()
   const { rememberedIntention, resetSession, seen, markSeen } = usePrefs()
   const { showToast } = useInteractions()
@@ -50,9 +52,7 @@ function AppInner() {
     setTab('home')
     resetSession(m)
     if (switching && !seen['model-switch']) {
-      showToast({
-        message: 'Different money, different app — watch the feed change.',
-      })
+      showToast({ message: t('toast.modelSwitch') })
       markSeen('model-switch')
     }
     if (m === 'subscription' && !rememberedIntention) {
@@ -133,15 +133,17 @@ function AppInner() {
 
 function App() {
   return (
-    <ModelProvider>
-      <PrefsProvider>
-        <InteractionsProvider>
-          <PhoneFrame>
-            <AppInner />
-          </PhoneFrame>
-        </InteractionsProvider>
-      </PrefsProvider>
-    </ModelProvider>
+    <LocaleProvider>
+      <ModelProvider>
+        <PrefsProvider>
+          <InteractionsProvider>
+            <PhoneFrame>
+              <AppInner />
+            </PhoneFrame>
+          </InteractionsProvider>
+        </PrefsProvider>
+      </ModelProvider>
+    </LocaleProvider>
   )
 }
 

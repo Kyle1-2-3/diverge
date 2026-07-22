@@ -66,4 +66,44 @@ export const ads: Ad[] = [
     image: photo('divadphone'),
     cta: 'Trade in',
   },
+  {
+    id: 'ad6',
+    brand: 'CrunchQuest',
+    handle: 'crunchquest.game',
+    tagline: 'Just one more level',
+    caption:
+      'your daily bonus expires in 2 hours ⏰ 50 free spins if you log in NOW. everyone in your area is playing 🎮',
+    image: photo('divadgame'),
+    cta: 'Play free',
+  },
+  {
+    id: 'ad7',
+    brand: 'SipCity',
+    handle: 'sipcity.delivery',
+    tagline: 'Bubble tea in 15 min',
+    caption:
+      'craving hits at 11pm? we know. we literally know 🧋 first order free — tonight only.',
+    image: photo('divadboba'),
+    cta: 'Order now',
+  },
+  {
+    id: 'ad8',
+    brand: 'FitStreak',
+    handle: 'fitstreak.app',
+    tagline: 'Don’t break the chain',
+    caption:
+      'day 1 is easy. day 100 is who you become 💪 your friends can see your streak — can they see you quit?',
+    image: photo('divadfit'),
+    cta: 'Start streak',
+  },
+  {
+    id: 'ad9',
+    brand: 'GlossDrop',
+    handle: 'glossdrop',
+    tagline: 'As seen everywhere',
+    caption:
+      'the lip oil your feed won’t shut up about 💋 back in stock for 24 hours. after that? who knows.',
+    image: photo('divadgloss'),
+    cta: 'Get it first',
+  },
 ]

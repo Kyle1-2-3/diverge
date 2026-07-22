@@ -125,6 +125,27 @@ describe('feedback shapes later chapters', () => {
     expect(chapter.some((p) => p.handle === 'noodle.diaries')).toBe(false)
   })
 
+  it('brings a topic and creator back after resuming/unhiding', () => {
+    // Same as above, but with the preferences cleared again — the pool is
+    // large, so ask for a big chapter to make reappearance observable.
+    const ctx = baseCtx()
+    const chapter = composeChapter(posts, ctx, new Set(), posts.length)
+    expect(chapter.some((p) => p.primaryTopic === 'fashion')).toBe(true)
+    expect(chapter.some((p) => p.handle === 'noodle.diaries')).toBe(true)
+  })
+
+  it('"more like this" lifts a topic in the ranking', () => {
+    const post = byId('p59') // textile-design, outside the seed interests
+    const neutral = scorePost(post, baseCtx())
+    const boosted = scorePost(
+      post,
+      baseCtx({
+        prefs: { topicAdjust: { 'textile-design': 'more' }, hiddenCreators: [] },
+      }),
+    )
+    expect(boosted).toBeGreaterThan(neutral + 0.3)
+  })
+
   it('"less like this" outranks the model preference', () => {
     const post = byId('p1')
     const neutral = scorePost(post, baseCtx())
@@ -177,7 +198,19 @@ describe('transparency', () => {
         familiarityOf(p, interests) === 'adjacent' && p.sourceType !== 'friend',
     )!
     const reason = reasonFor(adjacent, ctx)
-    expect(reason.toLowerCase()).toContain('connects')
+    expect(reason.main.kind).toBe('adjacent')
+    if (reason.main.kind === 'adjacent') {
+      expect(reason.main.near).toBeTruthy()
+      expect(reason.main.topic).toBe(adjacent.primaryTopic)
+    }
+  })
+
+  it('mentions the user asking for more of a topic', () => {
+    const post = byId('p1')
+    const ctx = baseCtx({
+      prefs: { topicAdjust: { fashion: 'more' }, hiddenCreators: [] },
+    })
+    expect(reasonFor(post, ctx).askedMore).toBe('fashion')
   })
 
   it('describes the mix without judging it', () => {

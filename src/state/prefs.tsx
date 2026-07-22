@@ -43,12 +43,32 @@ const EMPTY_SESSION: SessionStats = {
   feeling: null,
 }
 
+/** One explicit feed change the user made — shown in "Recent choices" and
+ *  reversible from there. */
+export interface FeedChoice {
+  id: string
+  kind: 'topic' | 'creator' | 'diversity'
+  topic?: TopicId
+  level?: 'more' | 'less' | 'paused'
+  handle?: string
+  /** Diversity dial values (before/after). */
+  from?: number
+  to?: number
+}
+
+const MAX_CHOICES = 10
+
 interface PrefsValue {
   feedPrefs: FeedPrefs
   adjustTopic: (topic: TopicId, level: 'more' | 'less' | 'paused' | null) => void
   resetAdjust: () => void
   hideCreator: (handle: string) => void
   unhideCreator: (handle: string) => void
+
+  /** Most-recent-first log of explicit feed changes. */
+  choices: FeedChoice[]
+  pushChoice: (c: Omit<FeedChoice, 'id'>) => void
+  removeChoice: (id: string) => void
 
   rememberedIntention: IntentionId | null
   setRememberedIntention: (id: IntentionId | null) => void
@@ -74,6 +94,7 @@ const STORAGE_KEY = 'diverge-prefs-v1'
 interface Stored {
   topicAdjust?: TopicAdjust
   hiddenCreators?: string[]
+  choices?: FeedChoice[]
   rememberedIntention?: IntentionId | null
   seen?: Record<string, boolean>
   sessions?: Partial<Record<BusinessModel, SessionStats>>
@@ -96,6 +117,7 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
   const [hiddenCreators, setHiddenCreators] = useState<string[]>(
     initial.hiddenCreators ?? [],
   )
+  const [choices, setChoices] = useState<FeedChoice[]>(initial.choices ?? [])
   const [rememberedIntention, setRememberedIntention] =
     useState<IntentionId | null>(initial.rememberedIntention ?? null)
   const [seen, setSeen] = useState<Record<string, boolean>>(initial.seen ?? {})
@@ -110,6 +132,7 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
         JSON.stringify({
           topicAdjust,
           hiddenCreators,
+          choices,
           rememberedIntention,
           seen,
           sessions,
@@ -118,7 +141,7 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
     } catch {
       // Storage unavailable — the app still works, it just won't remember.
     }
-  }, [topicAdjust, hiddenCreators, rememberedIntention, seen, sessions])
+  }, [topicAdjust, hiddenCreators, choices, rememberedIntention, seen, sessions])
 
   const value: PrefsValue = {
     feedPrefs: { topicAdjust, hiddenCreators },
@@ -136,6 +159,16 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
       ),
     unhideCreator: (handle) =>
       setHiddenCreators((prev) => prev.filter((h) => h !== handle)),
+
+    choices,
+    pushChoice: (c) =>
+      setChoices((prev) =>
+        [{ ...c, id: `ch-${Date.now()}-${prev.length}` }, ...prev].slice(
+          0,
+          MAX_CHOICES,
+        ),
+      ),
+    removeChoice: (id) => setChoices((prev) => prev.filter((c) => c.id !== id)),
 
     rememberedIntention,
     setRememberedIntention,

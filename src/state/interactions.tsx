@@ -31,11 +31,14 @@ interface InteractionsValue {
   liked: Set<string>
   saved: Set<string>
   hidden: Set<string>
+  /** Handles the user follows (on top of the implicit friend graph). */
+  follows: Set<string>
   comments: Record<string, UserComment[]>
   toast: Toast | null
   like: (postId: string) => void
   toggleLike: (postId: string) => void
   toggleSave: (postId: string) => void
+  toggleFollow: (handle: string) => void
   hidePost: (postId: string) => void
   unhidePost: (postId: string) => void
   addComment: (postId: string, text: string) => void
@@ -53,6 +56,7 @@ function loadSaved(): {
   liked?: string[]
   saved?: string[]
   hidden?: string[]
+  follows?: string[]
   comments?: Record<string, UserComment[]>
 } {
   try {
@@ -76,6 +80,7 @@ export function InteractionsProvider({ children }: { children: ReactNode }) {
   const [liked, setLiked] = useState(() => new Set(initial.liked ?? []))
   const [saved, setSaved] = useState(() => new Set(initial.saved ?? []))
   const [hidden, setHidden] = useState(() => new Set(initial.hidden ?? []))
+  const [follows, setFollows] = useState(() => new Set(initial.follows ?? []))
   const [comments, setComments] = useState<Record<string, UserComment[]>>(
     () => initial.comments ?? {},
   )
@@ -90,24 +95,27 @@ export function InteractionsProvider({ children }: { children: ReactNode }) {
           liked: [...liked],
           saved: [...saved],
           hidden: [...hidden],
+          follows: [...follows],
           comments,
         }),
       )
     } catch {
       // Storage unavailable — the app still works, it just won't remember.
     }
-  }, [liked, saved, hidden, comments])
+  }, [liked, saved, hidden, follows, comments])
 
   const value: InteractionsValue = {
     liked,
     saved,
     hidden,
+    follows,
     comments,
     toast,
     // `like` only ever adds (double-tap never un-likes, same as Instagram).
     like: (id) => setLiked((s) => (s.has(id) ? s : new Set(s).add(id))),
     toggleLike: (id) => setLiked((s) => toggled(s, id)),
     toggleSave: (id) => setSaved((s) => toggled(s, id)),
+    toggleFollow: (handle) => setFollows((s) => toggled(s, handle)),
     hidePost: (id) => setHidden((s) => new Set(s).add(id)),
     unhidePost: (id) =>
       setHidden((s) => {

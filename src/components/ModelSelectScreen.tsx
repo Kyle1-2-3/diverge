@@ -1,3 +1,4 @@
+import { useLocale } from '../i18n'
 import { models, type BusinessModel } from '../data/models'
 
 interface ModelSelectScreenProps {
@@ -6,23 +7,26 @@ interface ModelSelectScreenProps {
 
 /**
  * The experiment's front door: before entering the app, the user chooses who
- * pays for it. Quiet cards on white — the accent dot is the only colour, and
- * it follows the chosen model through the whole app.
+ * pays for it. Kept short — one line per card, details discoverable later
+ * inside the Platform Model Lab.
  */
 export default function ModelSelectScreen({ onSelect }: ModelSelectScreenProps) {
+  const { t } = useLocale()
+
   return (
     <div className="no-scrollbar h-full overflow-y-auto bg-white sm:pt-7">
       <div className="animate-fade-up flex min-h-full flex-col px-6 pb-8 pt-12">
         <header>
-          <p className="text-xs font-semibold text-faint">The experiment</p>
+          <p className="text-xs font-semibold text-faint">
+            {t('modelSelect.kicker')}
+          </p>
           <h2 className="mt-2 font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-ink">
-            Who pays for
+            {t('modelSelect.title1')}
             <br />
-            your feed?
+            {t('modelSelect.title2')}
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Same app, three ways of making money. Every design choice follows
-            the money — switch anytime.
+            {t('modelSelect.subtitle')}
           </p>
         </header>
 
@@ -42,23 +46,20 @@ export default function ModelSelectScreen({ onSelect }: ModelSelectScreenProps) 
                     style={{ background: m.accent }}
                   />
                   <span className="font-display text-base font-semibold text-ink">
-                    {m.name}
+                    {t(`model.${m.id}.name`)}
                   </span>
                 </span>
                 <span className="text-faint">→</span>
               </div>
               <p className="mt-2 text-sm font-medium leading-snug text-ink">
-                {m.whoPays}
-              </p>
-              <p className="mt-1 text-[13px] leading-snug text-muted">
-                {m.philosophy}
+                {t(`model.${m.id}.whoPays`)}
               </p>
             </button>
           ))}
         </div>
 
         <p className="mt-6 text-center text-xs text-faint">
-          Design-research prototype
+          {t('modelSelect.footer')}
         </p>
       </div>
     </div>

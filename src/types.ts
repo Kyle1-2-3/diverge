@@ -103,11 +103,6 @@ export type IntentionId =
 export interface Intention {
   id: IntentionId
   emoji: string
-  title: string
-  /** Short blurb shown on the selection chip. */
-  subtitle: string
-  /** Confirmation message shown after picking. */
-  message: string
   /** Target content mix for a chapter (fractions, sum ≈ 1). */
   mix: { core: number; adjacent: number; discovery: number }
   /** Suggested chapter length for this intention. */
@@ -117,6 +112,9 @@ export interface Intention {
 // ---------------------------------------------------------------------------
 // Posts
 // ---------------------------------------------------------------------------
+
+/** Media shape of the post photo. Defaults to portrait (4:5). */
+export type MediaAspect = 'portrait' | 'square' | 'landscape'
 
 export interface Post {
   id: string
@@ -131,11 +129,20 @@ export interface Post {
   tone: Tone
   /** Real photo URL (Lorem Picsum, free + keyless). */
   image: string
+  /** Extra photos — when present the post renders as a swipeable carousel. */
+  extraImages?: string[]
+  aspect?: MediaAspect
   /** A short location label shown under the username, IG-style. */
   location: string
   /** Relative time label, e.g. "2h". */
   timeAgo: string
+  /** May be empty — plenty of real posts have no caption at all. */
   caption: string
+  /** Language the caption was written in. Defaults to 'en'. User content is
+   *  never auto-translated when the app language changes. */
+  lang?: 'en' | 'ja'
+  /** Predefined translation into the other language, shown on demand. */
+  translation?: string
   likes: number
   comments: number
   /** Name of a friend who liked it, for the "liked by X and others" line. */

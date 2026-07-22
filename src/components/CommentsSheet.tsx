@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import type { Post } from '../types'
+import { useLocale } from '../i18n'
 import { mockComments } from '../data/comments'
 import { useInteractions } from '../state/interactions'
-import { compact } from '../lib/format'
+import { compact, timeAgo } from '../lib/format'
 import Avatar from './Avatar'
 
 interface CommentsSheetProps {
@@ -15,6 +16,7 @@ interface CommentsSheetProps {
  * user has written (persisted, so their comments are still there tomorrow).
  */
 export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
+  const { t } = useLocale()
   const { comments, addComment } = useInteractions()
   const [text, setText] = useState('')
 
@@ -42,7 +44,7 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
           <span className="font-display text-sm font-bold tracking-[-0.01em] text-ink">
-            Comments{' '}
+            {t('comments.title')}{' '}
             <span className="tnum font-medium text-muted">
               ({compact(total)})
             </span>
@@ -50,7 +52,7 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
           <button
             onClick={onClose}
             className="p-1 text-lg leading-none text-muted"
-            aria-label="Close comments"
+            aria-label={t('common.close')}
           >
             ✕
           </button>
@@ -65,7 +67,9 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
                 <p className="text-sm text-ink">
                   <span className="font-semibold">{c.handle}</span> {c.text}
                 </p>
-                <p className="mt-0.5 text-[11px] text-faint">{c.timeAgo} ago</p>
+                <p className="mt-0.5 text-[11px] text-faint">
+                  {timeAgo(c.timeAgo, t)}
+                </p>
               </div>
             </div>
           ))}
@@ -78,7 +82,7 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
                   <span className="font-semibold">you</span> {c.text}
                 </p>
                 <p className="mt-0.5 text-[11px] font-medium text-brand">
-                  Your comment
+                  {t('comments.yours')}
                 </p>
               </div>
             </div>
@@ -87,7 +91,7 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
           {/* The big number vs the few shown — wink at it instead of faking
               hundreds of rows. */}
           <p className="pb-2 pt-1 text-center text-[11px] text-faint">
-            + {compact(post.comments)} more from people you may not follow
+            {t('comments.more', { n: compact(post.comments) })}
           </p>
         </div>
 
@@ -100,7 +104,7 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Add a comment…"
+            placeholder={t('comments.placeholder')}
             className="min-w-0 flex-1 rounded-md border border-hairline bg-white px-3 py-2 text-sm text-ink placeholder:text-faint focus:outline-none"
           />
           <button
@@ -108,7 +112,7 @@ export default function CommentsSheet({ post, onClose }: CommentsSheetProps) {
             disabled={!text.trim()}
             className="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-30"
           >
-            Post
+            {t('comments.post')}
           </button>
         </form>
       </div>

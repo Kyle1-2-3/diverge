@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { AngleType, PerspectiveAngle, Post } from '../types'
+import { useLocale } from '../i18n'
+import type { TranslationKey } from '../i18n/translations'
 import { usePrefs } from '../state/prefs'
 
 // ---------------------------------------------------------------------------
@@ -8,12 +10,12 @@ import { usePrefs } from '../state/prefs'
 // voices; entertainment posts get process and culture. Never pro-vs-anti.
 // ---------------------------------------------------------------------------
 
-const ANGLE_LABEL: Record<AngleType, string> = {
-  interpretation: 'Another reading',
-  context: 'Missing context',
-  affected: 'Who else feels this',
-  process: 'How it was made',
-  culture: 'The culture behind it',
+const ANGLE_KEY: Record<AngleType, TranslationKey> = {
+  interpretation: 'angle.interpretation',
+  context: 'angle.context',
+  affected: 'angle.affected',
+  process: 'angle.process',
+  culture: 'angle.culture',
 }
 
 /** True when a post's angles are entertainment-flavored. */
@@ -33,6 +35,7 @@ export default function PerspectivePathSheet({
   post,
   onClose,
 }: PerspectivePathSheetProps) {
+  const { t } = useLocale()
   const { seen, markSeen } = usePrefs()
   const angles: PerspectiveAngle[] = post.paths ?? []
   const [active, setActive] = useState(0)
@@ -50,12 +53,12 @@ export default function PerspectivePathSheet({
       >
         <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
           <span className="font-display text-sm font-bold tracking-[-0.01em] text-ink">
-            {isBehindThe(post) ? 'Behind this' : 'More angles'}
+            {isBehindThe(post) ? t('paths.behindThis') : t('paths.moreAngles')}
           </span>
           <button
             onClick={onClose}
             className="p-1 text-lg leading-none text-muted"
-            aria-label="Close perspectives"
+            aria-label={t('common.close')}
           >
             ✕
           </button>
@@ -65,8 +68,7 @@ export default function PerspectivePathSheet({
         {firstTime && (
           <div className="border-b border-hairline bg-brand-soft px-4 py-2.5">
             <p className="text-[11px] leading-snug text-ink">
-              Some posts carry extra angles — the same thing from more than one
-              seat, not an argument.
+              {t('paths.firstTime')}
             </p>
           </div>
         )}
@@ -83,7 +85,7 @@ export default function PerspectivePathSheet({
                   : 'border border-hairline bg-white text-ink'
               }`}
             >
-              {ANGLE_LABEL[a.type]}
+              {t(ANGLE_KEY[a.type])}
             </button>
           ))}
         </div>
@@ -103,7 +105,7 @@ export default function PerspectivePathSheet({
               }}
               className="mt-5 w-full rounded-full bg-brand py-3 font-display text-sm font-semibold text-white transition-transform active:scale-[0.97]"
             >
-              Back to the feed
+              {t('paths.back')}
             </button>
           </div>
         )}

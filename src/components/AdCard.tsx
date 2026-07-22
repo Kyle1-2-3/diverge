@@ -1,4 +1,5 @@
 import type { Ad } from '../data/ads'
+import { useLocale } from '../i18n'
 import { useInteractions } from '../state/interactions'
 import SmartImage from './SmartImage'
 
@@ -12,6 +13,7 @@ interface AdCardProps {
  * "Sponsored" label, and a loud call-to-action in the brand accent.
  */
 export default function AdCard({ ad }: AdCardProps) {
+  const { t } = useLocale()
   const { showToast } = useInteractions()
 
   return (
@@ -23,17 +25,15 @@ export default function AdCard({ ad }: AdCardProps) {
         </span>
         <div className="flex-1 leading-tight">
           <span className="text-sm font-semibold text-ink">{ad.handle}</span>
-          <span className="block text-[11px] text-faint">Sponsored</span>
+          <span className="block text-[11px] text-faint">
+            {t('common.sponsored')}
+          </span>
         </div>
         <button
-          onClick={() =>
-            showToast({
-              message: 'This ad is why the app is free. You are the product.',
-            })
-          }
+          onClick={() => showToast({ message: t('ad.whyToast') })}
           className="p-1 text-[11px] font-medium text-faint"
         >
-          Why?
+          {t('ad.why')}
         </button>
       </div>
 
@@ -48,7 +48,7 @@ export default function AdCard({ ad }: AdCardProps) {
       {/* CTA — the loudest element on the card, on purpose. */}
       <button
         onClick={() =>
-          showToast({ message: `Opening ${ad.brand}… this click paid for your scroll.` })
+          showToast({ message: t('ad.ctaToast', { brand: ad.brand }) })
         }
         className="flex w-full items-center justify-between bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
       >

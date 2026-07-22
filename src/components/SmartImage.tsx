@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocale } from '../i18n'
 
 interface SmartImageProps {
   src: string
@@ -16,19 +17,22 @@ export default function SmartImage({
   alt,
   className = '',
 }: SmartImageProps) {
+  const { t } = useLocale()
   const [loaded, setLoaded] = useState(false)
   const [failed, setFailed] = useState(false)
 
   return (
     <div className={`relative overflow-hidden bg-hairline ${className}`}>
-      {/* Flat fallback / loading state. */}
+      {/* Flat fallback / skeleton loading state. */}
       <div
         className={`absolute inset-0 flex items-center justify-center bg-hairline transition-opacity duration-300 ${
-          loaded && !failed ? 'opacity-0' : 'opacity-100'
+          loaded && !failed ? 'opacity-0' : 'animate-pulse opacity-100'
         }`}
       >
         {failed && (
-          <span className="text-[11px] font-medium text-faint">No image</span>
+          <span className="text-[11px] font-medium text-faint">
+            {t('image.none')}
+          </span>
         )}
       </div>
 

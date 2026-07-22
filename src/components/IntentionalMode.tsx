@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocale } from '../i18n'
 import { intentions } from '../data/intentions'
 import type { IntentionId } from '../types'
 import { usePrefs } from '../state/prefs'
@@ -17,6 +18,7 @@ export default function IntentionalMode({
   onConfirm,
   onSkip,
 }: IntentionalModeProps) {
+  const { t } = useLocale()
   const { rememberedIntention, setRememberedIntention } = usePrefs()
   const [remember, setRemember] = useState(rememberedIntention !== null)
 
@@ -29,17 +31,14 @@ export default function IntentionalMode({
     <div className="no-scrollbar h-full overflow-y-auto bg-white sm:pt-7">
       <div className="animate-fade-up flex min-h-full flex-col px-6 pb-7 pt-12">
         <header>
-          <p className="text-xs font-semibold text-faint">
-            Two seconds, promise
-          </p>
+          <p className="text-xs font-semibold text-faint">{t('mood.kicker')}</p>
           <h2 className="mt-2 font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-ink">
-            What's the
+            {t('mood.title1')}
             <br />
-            vibe today?
+            {t('mood.title2')}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Your pick shapes the session — change it anytime from the pill up
-            top.
+            {t('mood.subtitle')}
           </p>
         </header>
 
@@ -55,10 +54,10 @@ export default function IntentionalMode({
               <span className="text-2xl">{intention.emoji}</span>
               <span className="flex-1">
                 <span className="block font-display text-sm font-semibold text-ink">
-                  {intention.title}
+                  {t(`intent.${intention.id}.title`)}
                 </span>
                 <span className="block text-xs text-muted">
-                  {intention.subtitle}
+                  {t(`intent.${intention.id}.subtitle`)}
                 </span>
               </span>
               <span className="text-faint">→</span>
@@ -77,7 +76,7 @@ export default function IntentionalMode({
             className="h-4 w-4 accent-brand"
           />
           <span className="text-xs font-medium text-muted">
-            Remember my pick for next time
+            {t('mood.remember')}
           </span>
         </label>
 
@@ -85,7 +84,7 @@ export default function IntentionalMode({
           onClick={onSkip}
           className="mt-auto pt-6 text-center text-xs font-semibold text-muted"
         >
-          Skip for now →
+          {t('common.skip')}
         </button>
       </div>
     </div>

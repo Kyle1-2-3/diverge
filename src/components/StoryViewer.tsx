@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocale } from '../i18n'
 import { stories } from '../data/stories'
 import SmartImage from './SmartImage'
 import Avatar from './Avatar'
@@ -21,6 +22,7 @@ const TIMES = ['1h', '2h', '4h', '6h', '9h', '12h', '16h']
  * previous. Closes itself after the last story.
  */
 export default function StoryViewer({ initialId, onClose }: StoryViewerProps) {
+  const { t } = useLocale()
   const viewable = stories.filter((s) => !s.isYou)
   const [index, setIndex] = useState(() =>
     Math.max(
@@ -81,13 +83,13 @@ export default function StoryViewer({ initialId, onClose }: StoryViewerProps) {
         </span>
         {story.outside && (
           <span className="rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold text-white">
-            Outside your circle
+            {t('stories.outside')}
           </span>
         )}
         <button
           onClick={onClose}
           className="ml-auto p-1 text-xl leading-none text-white"
-          aria-label="Close story"
+          aria-label={t('common.close')}
         >
           ✕
         </button>
@@ -95,8 +97,8 @@ export default function StoryViewer({ initialId, onClose }: StoryViewerProps) {
 
       {/* Invisible tap zones: left third = back, rest = forward. */}
       <div className="relative z-10 flex flex-1">
-        <button className="w-1/3" onClick={prev} aria-label="Previous story" />
-        <button className="w-2/3" onClick={next} aria-label="Next story" />
+        <button className="w-1/3" onClick={prev} aria-label={t('a11y.prevStory')} />
+        <button className="w-2/3" onClick={next} aria-label={t('a11y.nextStory')} />
       </div>
     </div>
   )

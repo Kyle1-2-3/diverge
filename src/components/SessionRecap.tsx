@@ -1,6 +1,8 @@
 import type { Post } from '../types'
+import { useLocale } from '../i18n'
 import type { RecCtx } from '../lib/recommend'
 import { feedMixOf } from '../lib/recommend'
+import type { FeelingId } from './FeedChapterEnd'
 import FeedMix from './FeedMix'
 
 // ---------------------------------------------------------------------------
@@ -11,7 +13,7 @@ import FeedMix from './FeedMix'
 interface SessionRecapProps {
   shown: Post[]
   minutes: number
-  feeling: string | null
+  feeling: FeelingId | null
   ctx: RecCtx
   onDone: () => void
 }
@@ -23,6 +25,7 @@ export default function SessionRecap({
   ctx,
   onDone,
 }: SessionRecapProps) {
+  const { t } = useLocale()
   const mix = feedMixOf(shown, ctx.interests)
 
   return (
@@ -31,20 +34,20 @@ export default function SessionRecap({
         className="animate-fade-up no-scrollbar shadow-soft-lg max-h-[90%] w-full overflow-y-auto rounded-t-2xl bg-white p-5 pb-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-xs font-semibold text-brand">Session closed</p>
+        <p className="text-xs font-semibold text-brand">{t('recap.kicker')}</p>
         <h2 className="mt-1 font-display text-3xl font-bold leading-[1.05] tracking-[-0.02em] text-ink">
-          Time well
+          {t('recap.title1')}
           <br />
-          spent.
+          {t('recap.title2')}
         </h2>
 
         <div className="mt-4 grid grid-cols-3 gap-2.5">
           {[
-            { value: String(mix.counts.total), label: 'posts seen' },
-            { value: `${Math.max(1, minutes)}m`, label: 'of your time' },
+            { value: String(mix.counts.total), label: t('recap.postsSeen') },
+            { value: `${Math.max(1, minutes)}m`, label: t('recap.ofYourTime') },
             {
               value: String(mix.counts.adjacent + mix.counts.discovery),
-              label: 'discoveries',
+              label: t('recap.discoveries'),
             },
           ].map((s) => (
             <div
@@ -63,20 +66,22 @@ export default function SessionRecap({
 
         {feeling && (
           <p className="mt-3 text-xs text-muted">
-            You called it:{' '}
-            <span className="font-semibold text-ink">{feeling}</span>
+            {t('recap.youCalledIt')}{' '}
+            <span className="font-semibold text-ink">
+              {t(`feeling.${feeling}`)}
+            </span>
           </p>
         )}
 
         <div className="mt-4">
-          <FeedMix mix={mix} title="This session's mix" />
+          <FeedMix mix={mix} title={t('mix.sessionTitle')} />
         </div>
 
         <button
           onClick={onDone}
           className="mt-5 w-full rounded-full bg-brand py-3.5 font-display text-sm font-semibold text-white transition-transform active:scale-[0.97]"
         >
-          See you when you're curious →
+          {t('recap.cta')}
         </button>
       </div>
     </div>

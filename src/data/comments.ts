@@ -60,4 +60,91 @@ export const mockComments: Record<string, MockComment[]> = {
     { handle: 'coachreyes', text: 'this is the motivation i needed', timeAgo: '22h' },
     { handle: 'quietminds', text: 'nature therapy is real', timeAgo: '20h' },
   ],
+  p14: [
+    { handle: 'yujin_kim', text: 'WE SURVIVED 🎉', timeAgo: '18m' },
+    { handle: 'leo.kicks', text: 'why wasn’t i invited 😐', timeAgo: '15m' },
+    { handle: 'sana.days', text: '@leo.kicks you had practice!!', timeAgo: '12m' },
+  ],
+  p15: [
+    { handle: 'daichi.jpg', text: 'one good ball is one more than last week', timeAgo: '50m' },
+    { handle: 'sana.days', text: 'lmaooo the (1)', timeAgo: '40m' },
+  ],
+  p16: [
+    { handle: 'mei.mochi', text: 'cats and routers, name a better duo', timeAgo: '2h' },
+    { handle: 'yujin_kim', text: 'tax: more mochi pics please', timeAgo: '1h' },
+  ],
+  p34: [
+    { handle: 'sana.days', text: 'and all 47 are blurry 😭', timeAgo: '30m' },
+    { handle: 'marcus.wav', text: 'the karaoke lore continues', timeAgo: '22m' },
+    { handle: 'yujin_kim', text: 'they’re artistic actually', timeAgo: '15m' },
+  ],
+  p35: [
+    { handle: 'riko.o3', text: 'that’s the best way to order tbh', timeAgo: '1h' },
+    { handle: 'tomo.eats', text: 'point-at-the-menu gang', timeAgo: '1h' },
+  ],
+  p36: [
+    { handle: 'yuki.pics', text: '🥹🥹🥹', timeAgo: '3h' },
+    { handle: 'hana.notes', text: 'no caption needed. perfect post', timeAgo: '2h' },
+  ],
+  p37: [
+    { handle: 'yujin_kim', text: 'the whiteboard says it all', timeAgo: '2h' },
+    { handle: 'sana.days', text: 'group projects build character apparently', timeAgo: '2h' },
+  ],
+  p40: [
+    { handle: 'yujin_kim', text: 'slide 3 is my new lockscreen', timeAgo: '4h' },
+    { handle: 'mei.mochi', text: 'yesterday was so fun 🥹', timeAgo: '3h' },
+  ],
+  p41: [
+    { handle: 'daichi.jpg', text: 'わかる', timeAgo: '1h' },
+    { handle: 'tomo.eats', text: 'this is a universal truth', timeAgo: '1h' },
+  ],
+  p44: [
+    { handle: 'mei.mochi', text: 'the box never stood a chance', timeAgo: '20h' },
+    { handle: 'nakamura_shun', text: 'いい表情', timeAgo: '18h' },
+    { handle: 'sana.days', text: 'mochi content is why i open this app', timeAgo: '12h' },
+  ],
+  p45: [
+    { handle: 'aki.shoots', text: '光がきれい', timeAgo: '8h' },
+    { handle: 'yuki.pics', text: 'he owns that street and he knows it', timeAgo: '7h' },
+  ],
+  p46: [
+    { handle: 'midnight.oven', text: 'a fallen soufflé is just a confident pancake', timeAgo: '1d' },
+    { handle: 'hana.notes', text: 'still eating it tho right', timeAgo: '1d' },
+    { handle: 'tomo.eats', text: '@hana.notes obviously', timeAgo: '1d' },
+  ],
+  p51: [
+    { handle: 'kai.runs', text: 'attempt 37 hits different', timeAgo: '2d' },
+    { handle: 'groovlab', text: 'the clean landing?? insane', timeAgo: '2d' },
+  ],
+  p53: [
+    { handle: 'tomo.eats', text: '3am is when the best bread happens', timeAgo: '10h' },
+    { handle: 'grandpa.garden', text: 'would trade a tomato for a slice', timeAgo: '9h' },
+  ],
+  p55: [
+    { handle: 'fridaynightfc', text: 'watched this 9 times', timeAgo: '15h' },
+    { handle: 'ren_kudo', text: 'our keeper could never 💀', timeAgo: '12h' },
+    { handle: 'leo.kicks', text: 'the EYES bro', timeAgo: '10h' },
+  ],
+  p58: [
+    { handle: 'hana.notes', text: '今日も行けなかった…明日こそ', timeAgo: '8h' },
+    { handle: 'beanaboutit', text: 'the daily sellout post is my favorite genre', timeAgo: '7h' },
+  ],
+  p60: [
+    { handle: 'vinylhour', text: 'digitize them!! carefully!!', timeAgo: '2d' },
+    { handle: 'wavetable', text: 'the handwriting on side B 😭', timeAgo: '2d' },
+  ],
+  p63: [
+    { handle: 'pixel.bento', text: 'Sir Whiskers looks noble', timeAgo: '20h' },
+    { handle: 'yuki.pics', text: 'commissioning one of mochi immediately', timeAgo: '18h' },
+  ],
+  p65: [
+    { handle: 'leo.kicks', text: 'i am in this photo and i don’t like it', timeAgo: '2d' },
+    { handle: 'statline', text: 'the run expectancy on this hurt to calculate', timeAgo: '2d' },
+    { handle: 'coachreyes', text: 'trust the process… next time', timeAgo: '1d' },
+  ],
+  p66: [
+    { handle: 'tomo.eats', text: 'a whole tomato!! proud of you both', timeAgo: '22h' },
+    { handle: 'ecofutures', text: 'homegrown is homegrown 🍅', timeAgo: '20h' },
+    { handle: 'mei.mochi', text: 'update us when it’s harvest day', timeAgo: '16h' },
+  ],
 }

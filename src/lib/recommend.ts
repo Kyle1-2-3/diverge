@@ -318,45 +318,52 @@ export function composeChapter(
 
 // ---- reasons ---------------------------------------------------------------
 
-const label = (t: TopicId) => topicMeta[t].label.toLowerCase()
+/** The main signal that put a post in the feed. */
+export type Reason =
+  | { kind: 'friend'; handle: string }
+  | { kind: 'core'; topic: TopicId }
+  | { kind: 'adjacent'; topic: TopicId; near: TopicId }
+  | { kind: 'discovery'; topic: TopicId }
+
+export interface ReasonSummary {
+  main: Reason
+  /** Present when the session intention genuinely boosted this post. */
+  intentionId?: IntentionId
+  /** Present when the user explicitly asked for more of this topic. */
+  askedMore?: TopicId
+}
 
 /**
- * A specific, honest explanation for why this post is here. Assembled from
- * the same signals the score used — nothing invented.
+ * A specific, honest explanation for why this post is here — structured so
+ * the UI can render it in any language. Assembled from the same signals the
+ * score used, nothing invented.
  */
-export function reasonFor(post: Post, ctx: RecCtx): string {
-  const parts: string[] = []
+export function reasonFor(post: Post, ctx: RecCtx): ReasonSummary {
   const fam = familiarityOf(post, ctx.interests)
   const near = nearestInterest(post, ctx.interests)
 
+  let main: Reason
   if (post.sourceType === 'friend') {
-    parts.push(`${post.handle} is someone you follow closely`)
+    main = { kind: 'friend', handle: post.handle }
   } else if (fam === 'core') {
-    parts.push(`you often engage with ${label(post.primaryTopic)} posts`)
+    main = { kind: 'core', topic: post.primaryTopic }
   } else if (fam === 'adjacent' && near && near !== post.primaryTopic) {
-    parts.push(
-      `you're into ${label(near)}, and this connects it with ${label(post.primaryTopic)}`,
-    )
+    main = { kind: 'adjacent', topic: post.primaryTopic, near }
   } else {
-    parts.push(
-      `this is a wider pick — ${label(post.primaryTopic)} sits a few steps beyond your usual topics`,
-    )
+    main = { kind: 'discovery', topic: post.primaryTopic }
   }
 
-  if (ctx.model !== 'attention') {
-    const intention = intentionById(ctx.intentionId)
-    if (intentionMatch(post, ctx.intentionId) >= 0.7) {
-      parts.push(`you picked “${intention.title}” for this session`)
-    }
+  const out: ReasonSummary = { main }
+  if (
+    ctx.model !== 'attention' &&
+    intentionMatch(post, ctx.intentionId) >= 0.7
+  ) {
+    out.intentionId = ctx.intentionId
   }
-
-  const adjust = ctx.prefs.topicAdjust[post.primaryTopic]
-  if (adjust === 'more') {
-    parts.push(`you asked for more ${label(post.primaryTopic)}`)
+  if (ctx.prefs.topicAdjust[post.primaryTopic] === 'more') {
+    out.askedMore = post.primaryTopic
   }
-
-  const sentence = parts.join(', and ')
-  return sentence.charAt(0).toUpperCase() + sentence.slice(1) + '.'
+  return out
 }
 
 // ---- feed mix (session summary) -------------------------------------------

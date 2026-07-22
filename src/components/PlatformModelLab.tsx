@@ -1,3 +1,6 @@
+import { useLocale } from '../i18n'
+import type { TranslationKey } from '../i18n/translations'
+import type { TFunc } from '../i18n'
 import { models, type BusinessModel } from '../data/models'
 import { useModel } from '../state/model'
 import { usePrefs, type SessionStats } from '../state/prefs'
@@ -25,26 +28,34 @@ const fmt = {
       : '0%',
   creators: (s: SessionStats) => String(s.creators.length),
   choices: (s: SessionStats) => String(s.choices),
-  ended: (s: SessionStats) => (s.endedNaturally ? 'yes' : 'no'),
-  feeling: (s: SessionStats) => s.feeling ?? '—',
 }
 
-const ROWS: { label: string; get: (s: SessionStats) => string }[] = [
-  { label: 'Session length', get: fmt.minutes },
-  { label: 'Posts viewed', get: fmt.posts },
-  { label: 'Ads seen', get: fmt.ads },
-  { label: 'Familiar content', get: fmt.familiar },
-  { label: 'Adjacent discovery', get: fmt.discovery },
-  { label: 'Distinct creators', get: fmt.creators },
-  { label: 'Explicit choices', get: fmt.choices },
-  { label: 'Natural ending', get: fmt.ended },
-  { label: 'You called it', get: fmt.feeling },
+const ROWS: {
+  labelKey: TranslationKey
+  get: (s: SessionStats, t: TFunc) => string
+}[] = [
+  { labelKey: 'lab.row.length', get: (s) => fmt.minutes(s) },
+  { labelKey: 'lab.row.posts', get: (s) => fmt.posts(s) },
+  { labelKey: 'lab.row.ads', get: (s) => fmt.ads(s) },
+  { labelKey: 'lab.row.familiar', get: (s) => fmt.familiar(s) },
+  { labelKey: 'lab.row.discovery', get: (s) => fmt.discovery(s) },
+  { labelKey: 'lab.row.creators', get: (s) => fmt.creators(s) },
+  { labelKey: 'lab.row.choices', get: (s) => fmt.choices(s) },
+  {
+    labelKey: 'lab.row.ended',
+    get: (s, t) => (s.endedNaturally ? t('lab.yes') : t('lab.no')),
+  },
+  {
+    labelKey: 'lab.row.feeling',
+    get: (s, t) => (s.feeling ? t(`feeling.${s.feeling}` as TranslationKey) : '—'),
+  },
 ]
 
 export default function PlatformModelLab({
   onClose,
   onSwitchModel,
 }: PlatformModelLabProps) {
+  const { t } = useLocale()
   const { model } = useModel()
   const { sessions } = usePrefs()
   const sampled = models.filter((m) => sessions[m.id]?.posts)
@@ -54,17 +65,15 @@ export default function PlatformModelLab({
       <header className="flex items-center justify-between border-b border-hairline bg-white px-4 py-3 sm:mt-7">
         <div>
           <h2 className="font-display text-lg font-bold tracking-[-0.01em] text-ink">
-            Platform model lab
+            {t('lab.title')}
           </h2>
-          <p className="text-[11px] text-muted">
-            Same you, same posts — three ways of making money.
-          </p>
+          <p className="text-[11px] text-muted">{t('lab.subtitle')}</p>
         </div>
         <button
           onClick={onClose}
           className="rounded-full border border-hairline bg-white px-3 py-1 text-xs font-medium text-ink transition-transform active:scale-[0.98]"
         >
-          Done
+          {t('common.done')}
         </button>
       </header>
 
@@ -94,15 +103,15 @@ export default function PlatformModelLab({
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block font-display text-sm font-semibold">
-                    {m.name}
-                    {active && ' · running'}
+                    {t(`model.${m.id}.name`)}
+                    {active && ` ${t('modelBar.running')}`}
                   </span>
                   <span
                     className={`block truncate text-xs ${
                       active ? 'text-white/70' : 'text-muted'
                     }`}
                   >
-                    {m.kpi}
+                    {t(`model.${m.id}.kpi`)}
                   </span>
                 </span>
               </button>
@@ -114,14 +123,14 @@ export default function PlatformModelLab({
         <div className="shadow-soft mt-5 overflow-hidden rounded-xl border border-hairline bg-white">
           <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
             <h3 className="text-xs font-semibold text-ink">
-              Session observations
+              {t('lab.observations')}
             </h3>
-            <span className="text-[10px] text-faint">local · simulated</span>
+            <span className="text-[10px] text-faint">{t('lab.local')}</span>
           </div>
 
           {sampled.length === 0 ? (
             <p className="px-3 py-6 text-center text-xs text-muted">
-              Spend a little time in each model and the comparison fills in.
+              {t('lab.empty')}
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -129,7 +138,7 @@ export default function PlatformModelLab({
                 <thead>
                   <tr>
                     <th className="border-b border-hairline px-3 py-2 text-[10px] font-medium text-faint">
-                      Latest session
+                      {t('lab.latest')}
                     </th>
                     {models.map((m) => (
                       <th
@@ -141,7 +150,7 @@ export default function PlatformModelLab({
                           style={{ background: m.accent }}
                         />
                         <span className="mt-1 block text-[10px] font-medium text-muted">
-                          {m.short}
+                          {t(`model.short.${m.id}`)}
                         </span>
                       </th>
                     ))}
@@ -149,9 +158,9 @@ export default function PlatformModelLab({
                 </thead>
                 <tbody>
                   {ROWS.map((row) => (
-                    <tr key={row.label} className="border-b border-hairline last:border-b-0">
+                    <tr key={row.labelKey} className="border-b border-hairline last:border-b-0">
                       <td className="px-3 py-2 text-[11px] font-medium text-ink">
-                        {row.label}
+                        {t(row.labelKey)}
                       </td>
                       {models.map((m) => {
                         const s = sessions[m.id]
@@ -160,7 +169,7 @@ export default function PlatformModelLab({
                             key={m.id}
                             className="tnum px-2 py-2 text-center text-[11px] text-ink"
                           >
-                            {s?.posts ? row.get(s) : '—'}
+                            {s?.posts ? row.get(s, t) : '—'}
                           </td>
                         )
                       })}
@@ -173,8 +182,7 @@ export default function PlatformModelLab({
         </div>
 
         <p className="mt-3 pb-2 text-[11px] leading-snug text-faint">
-          Generated locally by this prototype to make incentives comparable —
-          not scientific measurements.
+          {t('lab.footnote')}
         </p>
       </div>
     </div>

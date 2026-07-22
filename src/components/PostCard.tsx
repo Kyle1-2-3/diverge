@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
 import type { Post } from '../types'
-import { topicMeta } from '../data/topics'
+import { useLocale } from '../i18n'
+import type { ReasonSummary } from '../lib/recommend'
 import { useInteractions } from '../state/interactions'
 import { useModel } from '../state/model'
 import { usePrefs } from '../state/prefs'
-import { compact } from '../lib/format'
+import { compact, timeAgo } from '../lib/format'
 import SmartImage from './SmartImage'
 import Avatar from './Avatar'
 import CommentsSheet from './CommentsSheet'
@@ -22,8 +23,14 @@ import {
 
 interface PostCardProps {
   post: Post
-  /** Specific, generated explanation for why this post is here. */
-  reason?: string
+  /** Structured, honest explanation for why this post is here. */
+  reason?: ReasonSummary
+}
+
+const ASPECT: Record<NonNullable<Post['aspect']>, string> = {
+  portrait: 'aspect-[4/5]',
+  square: 'aspect-square',
+  landscape: 'aspect-[4/3]',
 }
 
 /**
@@ -33,37 +40,51 @@ interface PostCardProps {
  * this transparency is stripped away — that contrast is the experiment.
  */
 export default function PostCard({ post, reason }: PostCardProps) {
+  const { t, lang } = useLocale()
   const {
     liked,
     saved,
+    follows,
     comments,
     like,
     toggleLike,
     toggleSave,
+    toggleFollow,
     hidePost,
     unhidePost,
     showToast,
   } = useInteractions()
   const { model } = useModel()
-  const { adjustTopic, hideCreator, unhideCreator, updateSession } = usePrefs()
+  const { adjustTopic, hideCreator, unhideCreator, updateSession, pushChoice } =
+    usePrefs()
   const [menuOpen, setMenuOpen] = useState(false)
   const [showWhy, setShowWhy] = useState(false)
   const [showComments, setShowComments] = useState(false)
   const [showPaths, setShowPaths] = useState(false)
+  const [showTranslation, setShowTranslation] = useState(false)
+  const [slide, setSlide] = useState(0)
   const [burst, setBurst] = useState(false) // double-tap heart animation
   const lastTap = useRef(0)
-  const topic = topicMeta[post.primaryTopic]
+  const topicLabel = t(`topic.${post.primaryTopic}`)
 
   // The attention model treats "why am I seeing this" as a legal obligation,
   // not a feature — so its answer says nothing.
-  const whyText =
+  const whySentences =
     model === 'attention'
-      ? 'Our systems predicted this content would keep you engaged. Ad relevance may also have played a role. That’s all we can share.'
-      : (reason ?? 'This matches topics you follow.')
+      ? [t('post.whyAttention')]
+      : reason
+        ? formatReason(reason, t)
+        : [t('reason.fallback')]
 
   const isLiked = liked.has(post.id)
   const isSaved = saved.has(post.id)
+  const isFollowed = follows.has(post.handle)
   const commentCount = post.comments + (comments[post.id]?.length ?? 0)
+  const images = [post.image, ...(post.extraImages ?? [])]
+  const aspectClass = ASPECT[post.aspect ?? 'portrait']
+  // "See translation" appears only on posts written in the other language.
+  const canTranslate =
+    post.translation !== undefined && (post.lang ?? 'en') !== lang
 
   /** Every explicit feedback action counts as a "choice" in the session log. */
   const trackChoice = () =>
@@ -89,8 +110,8 @@ export default function PostCard({ post, reason }: PostCardProps) {
     trackChoice()
     hidePost(post.id)
     showToast({
-      message: 'Post hidden',
-      actionLabel: 'Undo',
+      message: t('toast.postHidden'),
+      actionLabel: t('common.undo'),
       onAction: () => unhidePost(post.id),
     })
   }
@@ -99,9 +120,10 @@ export default function PostCard({ post, reason }: PostCardProps) {
     closeMenu()
     trackChoice()
     adjustTopic(post.primaryTopic, 'more')
+    pushChoice({ kind: 'topic', topic: post.primaryTopic, level: 'more' })
     showToast({
-      message: `More ${topic.label.toLowerCase()} coming up`,
-      actionLabel: 'Undo',
+      message: t('toast.moreTopic', { topic: topicLabel }),
+      actionLabel: t('common.undo'),
       onAction: () => adjustTopic(post.primaryTopic, null),
     })
   }
@@ -110,9 +132,10 @@ export default function PostCard({ post, reason }: PostCardProps) {
     closeMenu()
     trackChoice()
     adjustTopic(post.primaryTopic, 'less')
+    pushChoice({ kind: 'topic', topic: post.primaryTopic, level: 'less' })
     showToast({
-      message: `Less ${topic.label.toLowerCase()} from now on`,
-      actionLabel: 'Undo',
+      message: t('toast.lessTopic', { topic: topicLabel }),
+      actionLabel: t('common.undo'),
       onAction: () => adjustTopic(post.primaryTopic, null),
     })
   }
@@ -121,9 +144,10 @@ export default function PostCard({ post, reason }: PostCardProps) {
     closeMenu()
     trackChoice()
     adjustTopic(post.primaryTopic, 'paused')
+    pushChoice({ kind: 'topic', topic: post.primaryTopic, level: 'paused' })
     showToast({
-      message: `${topic.label} paused — resume it in your Interest Map`,
-      actionLabel: 'Undo',
+      message: t('toast.pausedTopic', { topic: topicLabel }),
+      actionLabel: t('common.undo'),
       onAction: () => adjustTopic(post.primaryTopic, null),
     })
   }
@@ -132,10 +156,20 @@ export default function PostCard({ post, reason }: PostCardProps) {
     closeMenu()
     trackChoice()
     hideCreator(post.handle)
+    pushChoice({ kind: 'creator', handle: post.handle })
     showToast({
-      message: `You won't see ${post.handle} anymore`,
-      actionLabel: 'Undo',
+      message: t('toast.hidCreator', { handle: post.handle }),
+      actionLabel: t('common.undo'),
       onAction: () => unhideCreator(post.handle),
+    })
+  }
+
+  const followCreator = () => {
+    toggleFollow(post.handle)
+    showToast({
+      message: isFollowed
+        ? t('toast.unfollowed', { handle: post.handle })
+        : t('toast.followed', { handle: post.handle }),
     })
   }
 
@@ -153,6 +187,15 @@ export default function PostCard({ post, reason }: PostCardProps) {
               {post.handle}
             </span>
             {post.verified && <Verified className="h-3.5 w-3.5" />}
+            {/* Follow — creators only; friends are already followed. */}
+            {post.sourceType !== 'friend' && !isFollowed && (
+              <button
+                onClick={followCreator}
+                className="ml-1 text-xs font-semibold text-brand"
+              >
+                · {t('common.follow')}
+              </button>
+            )}
           </div>
           {post.location && (
             <span className="text-[11px] text-muted">{post.location}</span>
@@ -161,7 +204,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
         <button
           onClick={() => setMenuOpen((v) => !v)}
           className="relative -mr-1 p-1 text-ink"
-          aria-label="More options"
+          aria-label={t('a11y.moreOptions')}
         >
           <More className="h-5 w-5" />
         </button>
@@ -174,16 +217,16 @@ export default function PostCard({ post, reason }: PostCardProps) {
           {model === 'attention' ? (
             <>
               <button onClick={notInterested} className={`${menuItem} border-t-0 font-semibold`}>
-                See fewer posts like this
+                {t('post.fewerLikeThis')}
               </button>
               <button
                 onClick={() => {
                   closeMenu()
-                  showToast({ message: 'Reported. Our systems will take a look.' })
+                  showToast({ message: t('toast.reported') })
                 }}
                 className={menuItem}
               >
-                Report
+                {t('post.report')}
               </button>
               <button
                 onClick={() => {
@@ -192,7 +235,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
                 }}
                 className="flex w-full items-center gap-2 border-t border-hairline px-4 py-2 text-left text-xs text-faint hover:bg-canvas"
               >
-                Why am I seeing this?
+                {t('post.whySeeingThis')}
               </button>
             </>
           ) : (
@@ -204,46 +247,79 @@ export default function PostCard({ post, reason }: PostCardProps) {
                 }}
                 className={`${menuItem} border-t-0 font-semibold hover:bg-brand-soft`}
               >
-                ? Why am I seeing this?
+                ? {t('post.whySeeingThis')}
               </button>
               <button onClick={moreLikeThis} className={menuItem}>
-                Show me more like this
+                {t('post.moreLikeThis')}
               </button>
               <button onClick={lessLikeThis} className={menuItem}>
-                Show me less like this
+                {t('post.lessLikeThis')}
               </button>
               <button onClick={pauseTopic} className={menuItem}>
-                Pause “{topic.label}”
+                {t('post.pauseTopic', { topic: topicLabel })}
               </button>
               <button onClick={hideThisCreator} className={menuItem}>
-                Hide {post.handle}
+                {t('post.hideCreator', { handle: post.handle })}
               </button>
               <button onClick={notInterested} className={`${menuItem} text-muted`}>
-                Not interested
+                {t('post.notInterested')}
               </button>
             </>
           )}
         </div>
       )}
 
-      {/* Photo */}
+      {/* Photo — single image or a swipeable carousel. */}
       <div
-        className="relative aspect-[4/5] w-full select-none"
+        className={`relative w-full select-none ${aspectClass}`}
         onClick={onPhotoTap}
       >
-        <SmartImage
-          src={post.image}
-          alt={post.caption}
-          className="h-full w-full"
-        />
+        {images.length === 1 ? (
+          <SmartImage
+            src={post.image}
+            alt={post.caption || post.handle}
+            className="h-full w-full"
+          />
+        ) : (
+          <div
+            className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto"
+            onScroll={(e) => {
+              const el = e.currentTarget
+              setSlide(Math.round(el.scrollLeft / el.clientWidth))
+            }}
+          >
+            {images.map((src, i) => (
+              <SmartImage
+                key={src}
+                src={src}
+                alt={`${post.handle} ${i + 1}`}
+                className="h-full w-full shrink-0 snap-center"
+              />
+            ))}
+          </div>
+        )}
+        {images.length > 1 && (
+          <>
+            <span className="tnum absolute right-2.5 top-2.5 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold text-white">
+              {slide + 1}/{images.length}
+            </span>
+            <span className="absolute bottom-2.5 left-1/2 flex -translate-x-1/2 gap-1">
+              {images.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    i === slide ? 'bg-white' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </span>
+          </>
+        )}
         {burst && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <HeartFilled className="h-24 w-24 animate-pop-in text-white drop-shadow-lg" />
           </div>
         )}
-        <span className="absolute bottom-2.5 left-2.5 rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-medium text-ink">
-          {topic.label}
-        </span>
       </div>
 
       {/* Actions */}
@@ -251,7 +327,7 @@ export default function PostCard({ post, reason }: PostCardProps) {
         <button
           onClick={() => (isLiked ? toggleLike(post.id) : likeWithBurst())}
           className="transition-transform active:scale-75"
-          aria-label="Like"
+          aria-label={t('a11y.like')}
         >
           {isLiked ? (
             <HeartFilled className="h-7 w-7 text-brand" />
@@ -262,23 +338,23 @@ export default function PostCard({ post, reason }: PostCardProps) {
         <button
           onClick={() => setShowComments(true)}
           className="transition-transform active:scale-75"
-          aria-label="Comment"
+          aria-label={t('a11y.comment')}
         >
           <Comment className="h-7 w-7" />
         </button>
         <button
           onClick={() =>
-            showToast({ message: `Link to @${post.handle}'s post copied` })
+            showToast({ message: t('toast.linkCopied', { handle: post.handle }) })
           }
           className="transition-transform active:scale-75"
-          aria-label="Share"
+          aria-label={t('a11y.share')}
         >
           <Share className="h-6 w-6" />
         </button>
         <button
           onClick={() => toggleSave(post.id)}
           className="ml-auto transition-transform active:scale-75"
-          aria-label="Save"
+          aria-label={t('a11y.save')}
         >
           {isSaved ? (
             <BookmarkFilled className="h-7 w-7" />
@@ -291,11 +367,31 @@ export default function PostCard({ post, reason }: PostCardProps) {
       {/* Likes + caption + comments */}
       <div className="px-3.5 pb-4 pt-2">
         <p className="tnum text-sm font-semibold text-ink">
-          {compact(post.likes + (isLiked ? 1 : 0))} likes
+          {compact(post.likes + (isLiked ? 1 : 0))} {t('common.likes')}
         </p>
-        <p className="mt-1 text-sm leading-snug text-ink">
-          <span className="font-semibold">{post.handle}</span> {post.caption}
-        </p>
+        {post.likedBy && post.likes >= 50 && (
+          <p className="mt-0.5 text-xs text-muted">
+            {t('post.likedBy', { name: post.likedBy })}
+          </p>
+        )}
+        {post.caption && (
+          <p className="mt-1 text-sm leading-snug text-ink">
+            <span className="font-semibold">{post.handle}</span> {post.caption}
+          </p>
+        )}
+        {canTranslate && (
+          <button
+            onClick={() => setShowTranslation((v) => !v)}
+            className="mt-1 block text-xs font-semibold text-muted"
+          >
+            {showTranslation ? t('post.hideTranslation') : t('post.seeTranslation')}
+          </button>
+        )}
+        {canTranslate && showTranslation && (
+          <p className="mt-1 text-sm leading-snug text-muted">
+            {post.translation}
+          </p>
+        )}
 
         {/* Perspective Paths — quiet, and only where they genuinely help. */}
         {post.paths && post.paths.length > 0 && model !== 'attention' && (
@@ -303,22 +399,24 @@ export default function PostCard({ post, reason }: PostCardProps) {
             onClick={() => setShowPaths(true)}
             className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-hairline bg-white px-3 py-1 text-xs font-medium text-ink transition-transform active:scale-[0.98]"
           >
-            {isBehindThe(post) ? '◇ Behind this' : '◇ See another angle'}
+            {isBehindThe(post) ? t('post.behindThis') : t('post.anotherAngle')}
           </button>
         )}
 
-        <button
-          onClick={() => setShowComments(true)}
-          className="mt-1.5 block text-sm text-muted"
-        >
-          View all {compact(commentCount)} comments
-        </button>
-        <p className="mt-1 text-[11px] text-faint">{post.timeAgo} ago</p>
+        {commentCount > 0 && (
+          <button
+            onClick={() => setShowComments(true)}
+            className="mt-1.5 block text-sm text-muted"
+          >
+            {t('post.viewComments', { n: compact(commentCount) })}
+          </button>
+        )}
+        <p className="mt-1 text-[11px] text-faint">{timeAgo(post.timeAgo, t)}</p>
       </div>
 
       {/* Sheets */}
       {showWhy && (
-        <WhySheet reason={whyText} onClose={() => setShowWhy(false)} />
+        <WhySheet sentences={whySentences} onClose={() => setShowWhy(false)} />
       )}
       {showComments && (
         <CommentsSheet post={post} onClose={() => setShowComments(false)} />
@@ -330,14 +428,47 @@ export default function PostCard({ post, reason }: PostCardProps) {
   )
 }
 
+/** Turn a structured reason into localized sentences. */
+function formatReason(
+  reason: ReasonSummary,
+  t: ReturnType<typeof useLocale>['t'],
+): string[] {
+  const out: string[] = []
+  const m = reason.main
+  if (m.kind === 'friend') out.push(t('reason.friend', { handle: m.handle }))
+  else if (m.kind === 'core')
+    out.push(t('reason.core', { topic: t(`topic.${m.topic}`) }))
+  else if (m.kind === 'adjacent')
+    out.push(
+      t('reason.adjacent', {
+        near: t(`topic.${m.near}`),
+        topic: t(`topic.${m.topic}`),
+      }),
+    )
+  else out.push(t('reason.discovery'))
+
+  if (reason.intentionId) {
+    out.push(
+      t('reason.intention', {
+        intention: t(`intent.${reason.intentionId}.title`),
+      }),
+    )
+  }
+  if (reason.askedMore) {
+    out.push(t('reason.more', { topic: t(`topic.${reason.askedMore}`) }))
+  }
+  return out
+}
+
 /** A small slide-up sheet explaining why the post appeared. */
 function WhySheet({
-  reason,
+  sentences,
   onClose,
 }: {
-  reason: string
+  sentences: string[]
   onClose: () => void
 }) {
+  const { t } = useLocale()
   return (
     <div
       className="absolute inset-0 z-40 flex items-end justify-center bg-black/40"
@@ -347,16 +478,20 @@ function WhySheet({
         className="animate-fade-up shadow-soft-lg w-full rounded-t-2xl bg-white p-6 pb-7 text-left"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-xs font-semibold text-brand">Transparency</p>
+        <p className="text-xs font-semibold text-brand">{t('post.whyKicker')}</p>
         <h3 className="mt-1 font-display text-lg font-bold tracking-[-0.01em] text-ink">
-          Why you're seeing this
+          {t('post.whyTitle')}
         </h3>
-        <p className="mt-2 text-sm leading-relaxed text-muted">{reason}</p>
+        {sentences.map((s, i) => (
+          <p key={i} className="mt-2 text-sm leading-relaxed text-muted">
+            {s}
+          </p>
+        ))}
         <button
           onClick={onClose}
           className="mt-5 w-full rounded-full bg-brand py-3.5 text-sm font-semibold text-white transition-transform active:scale-[0.97]"
         >
-          Got it
+          {t('common.gotIt')}
         </button>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { useLocale } from '../i18n'
 import { stories } from '../data/stories'
 import { useInteractions } from '../state/interactions'
 import Avatar from './Avatar'
@@ -9,6 +10,7 @@ interface StoriesBarProps {
 
 /** Horizontal, swipeable story tiles at the top of the feed. */
 export default function StoriesBar({ onOpenStory }: StoriesBarProps) {
+  const { t } = useLocale()
   const { showToast } = useInteractions()
 
   return (
@@ -18,7 +20,7 @@ export default function StoriesBar({ onOpenStory }: StoriesBarProps) {
           key={story.id}
           onClick={() =>
             story.isYou
-              ? showToast({ message: 'Posting stories is not in this demo — yet' })
+              ? showToast({ message: t('stories.notInDemo') })
               : onOpenStory(story.id)
           }
           className="flex w-16 shrink-0 flex-col items-center gap-1"
@@ -42,12 +44,12 @@ export default function StoriesBar({ onOpenStory }: StoriesBarProps) {
             {/* Accent marker only for stories from outside the usual circle. */}
             {story.outside && (
               <span className="absolute -right-1 -top-1 rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white">
-                New
+                {t('common.new')}
               </span>
             )}
           </span>
           <span className="max-w-full truncate text-[10px] font-medium text-muted">
-            {story.isYou ? 'You' : story.name}
+            {story.isYou ? t('stories.you') : story.name}
           </span>
         </button>
       ))}

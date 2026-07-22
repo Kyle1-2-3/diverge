@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import type { BusinessModel } from '../data/models'
+import { useLocale } from '../i18n'
+import type { Lang } from '../i18n/translations'
 import { currentUser } from '../data/user'
 import { posts } from '../data/posts'
 import { useInteractions } from '../state/interactions'
 import { useModel } from '../state/model'
-import { usePrefs } from '../state/prefs'
+import { usePrefs, type FeedChoice } from '../state/prefs'
 import InterestMapScreen from './InterestMapScreen'
 import PlatformModelLab from './PlatformModelLab'
 import SmartImage from './SmartImage'
@@ -18,12 +20,18 @@ interface ProfileScreenProps {
   onSwitchModel: (m: BusinessModel) => void
 }
 
+const LANGS: { id: Lang; label: string }[] = [
+  { id: 'en', label: 'English' },
+  { id: 'ja', label: '日本語' },
+]
+
 /**
  * The "You" tab — where each business model tells you who you are:
  *  - attention:    a creator dashboard. You are a channel; keep the numbers up.
  *  - subscription: usage insights. You are a customer; here's your time back.
  *  - public:       a perspective report. You are a citizen; here's your range.
- * The Interest Map and the Platform Model Lab live here, behind one tap.
+ * The Interest Map, the Platform Model Lab, the language setting, and the
+ * user's recent feed choices all live here, behind one tap.
  */
 export default function ProfileScreen({
   onReflect,
@@ -31,10 +39,12 @@ export default function ProfileScreen({
   onChangeMood,
   onSwitchModel,
 }: ProfileScreenProps) {
-  const { model, diversity, sessionMinutes } = useModel()
-  const { sessions } = usePrefs()
+  const { t, lang, setLang } = useLocale()
+  const { model, diversity, setDiversity, sessionMinutes } = useModel()
+  const { sessions, choices, removeChoice, adjustTopic, unhideCreator } =
+    usePrefs()
   const u = currentUser
-  const { saved, liked } = useInteractions()
+  const { saved, liked, showToast } = useInteractions()
   const [gridTab, setGridTab] = useState<'posts' | 'saved'>('posts')
   const [mapOpen, setMapOpen] = useState(false)
   const [labOpen, setLabOpen] = useState(false)
@@ -42,6 +52,27 @@ export default function ProfileScreen({
   const publicScore = 40 + Math.round(diversity * 0.55)
   const minutes = sessionMinutes()
   const session = sessions[model]
+
+  const choiceLabel = (c: FeedChoice): string => {
+    if (c.kind === 'creator') {
+      return t('choice.hidCreator', { handle: c.handle ?? '' })
+    }
+    if (c.kind === 'diversity') {
+      return t('choice.diversity', { n: c.to ?? diversity })
+    }
+    const topic = c.topic ? t(`topic.${c.topic}`) : ''
+    if (c.level === 'more') return t('choice.more', { topic })
+    if (c.level === 'less') return t('choice.less', { topic })
+    return t('choice.paused', { topic })
+  }
+
+  const reverseChoice = (c: FeedChoice) => {
+    if (c.kind === 'creator' && c.handle) unhideCreator(c.handle)
+    else if (c.kind === 'diversity') setDiversity(c.from ?? 70)
+    else if (c.topic) adjustTopic(c.topic, null)
+    removeChoice(c.id)
+    showToast({ message: t('toast.choiceReversed') })
+  }
 
   return (
     <div className="bg-white pb-8">
@@ -54,7 +85,7 @@ export default function ProfileScreen({
           onClick={onAbout}
           className="rounded-full border border-hairline bg-white px-3 py-1 text-xs font-medium text-ink transition-transform active:scale-[0.98]"
         >
-          About
+          {t('profile.about')}
         </button>
       </header>
 
@@ -64,9 +95,9 @@ export default function ProfileScreen({
           <Avatar name={u.name} className="shadow-soft-sm h-20 w-20 text-2xl" />
           <div className="flex flex-1 justify-around text-center">
             {[
-              { n: u.posts, l: 'posts' },
-              { n: u.followers, l: 'followers' },
-              { n: u.following, l: 'following' },
+              { n: u.posts, l: t('profile.posts') },
+              { n: u.followers, l: t('profile.followers') },
+              { n: u.following, l: t('profile.followingCount') },
             ].map((s) => (
               <div key={s.l}>
                 <p className="tnum text-lg font-bold text-ink">{s.n}</p>
@@ -84,7 +115,7 @@ export default function ProfileScreen({
             onClick={onChangeMood}
             className="mt-4 w-full rounded-lg border border-hairline bg-white py-2 text-sm font-semibold text-ink transition-transform active:scale-[0.98]"
           >
-            Set today's vibe
+            {t('profile.setVibe')}
           </button>
         )}
       </div>
@@ -93,15 +124,20 @@ export default function ProfileScreen({
       {model === 'attention' && (
         <div className="mt-6 px-4">
           <div className="shadow-soft rounded-xl bg-brand p-5 text-white">
-            <p className="text-xs font-medium text-white/80">Creator studio</p>
+            <p className="text-xs font-medium text-white/80">
+              {t('profile.creatorStudio')}
+            </p>
             <h2 className="mt-1 font-display text-xl font-bold leading-tight tracking-[-0.01em]">
-              Your reach is growing — don't stop now
+              {t('profile.attention.title')}
             </h2>
             <div className="mt-4 grid grid-cols-3 gap-2.5">
               {[
-                { value: '🔥 12', label: 'day streak' },
-                { value: '+124', label: 'followers this week' },
-                { value: `${Math.max(minutes, 47)}m`, label: 'in app today' },
+                { value: '🔥 12', label: t('profile.attention.streak') },
+                { value: '+124', label: t('profile.attention.newFollowers') },
+                {
+                  value: `${Math.max(minutes, 47)}m`,
+                  label: t('profile.attention.inApp'),
+                },
               ].map((s) => (
                 <div
                   key={s.label}
@@ -117,10 +153,10 @@ export default function ProfileScreen({
               ))}
             </div>
             <button className="mt-4 w-full rounded-full bg-white py-2.5 text-sm font-semibold text-brand transition-transform active:scale-[0.98]">
-              Post now — 231 followers online
+              {t('profile.attention.postNow')}
             </button>
             <p className="mt-2.5 text-center text-[11px] text-white/80">
-              Miss a day and the streak resets 🔥
+              {t('profile.attention.streakWarn')}
             </p>
           </div>
         </div>
@@ -130,17 +166,25 @@ export default function ProfileScreen({
       {model === 'subscription' && (
         <div className="mt-6 px-4">
           <div className="shadow-soft rounded-xl border border-hairline bg-white p-5">
-            <p className="text-xs font-semibold text-brand">Your time today</p>
+            <p className="text-xs font-semibold text-brand">
+              {t('profile.subscription.kicker')}
+            </p>
             <h2 className="mt-1 font-display text-xl font-bold leading-tight tracking-[-0.01em] text-ink">
               {minutes < 5
-                ? 'A light day. The app agrees.'
-                : 'Maybe that’s enough for today?'}
+                ? t('profile.subscription.light')
+                : t('profile.subscription.enough')}
             </h2>
             <div className="mt-4 grid grid-cols-3 gap-2.5">
               {[
-                { value: `${minutes}m`, label: 'this session' },
-                { value: String(session?.posts ?? 0), label: 'posts seen' },
-                { value: String(session?.choices ?? 0), label: 'choices made' },
+                { value: `${minutes}m`, label: t('profile.subscription.session') },
+                {
+                  value: String(session?.posts ?? 0),
+                  label: t('profile.subscription.postsSeen'),
+                },
+                {
+                  value: String(session?.choices ?? 0),
+                  label: t('profile.subscription.choices'),
+                },
               ].map((s) => (
                 <div
                   key={s.label}
@@ -156,8 +200,7 @@ export default function ProfileScreen({
               ))}
             </div>
             <p className="mt-4 text-xs leading-relaxed text-muted">
-              You pay, so the app reports to you. No streaks — closing it costs
-              nothing.
+              {t('profile.subscription.note')}
             </p>
           </div>
         </div>
@@ -168,23 +211,26 @@ export default function ProfileScreen({
         <div className="mt-6 px-4">
           <div className="shadow-soft rounded-xl bg-brand p-5 text-white">
             <p className="text-xs font-medium text-white/80">
-              Perspective report
+              {t('profile.public.kicker')}
             </p>
             <h2 className="mt-1 font-display text-xl font-bold leading-tight tracking-[-0.01em]">
               {((session?.adjacent ?? 0) + (session?.discovery ?? 0)) > 2
-                ? 'You wandered well this session'
-                : 'Room to roam — your call'}
+                ? t('profile.public.wandered')
+                : t('profile.public.room')}
             </h2>
             <div className="mt-4 grid grid-cols-3 gap-2.5">
               {[
-                { value: String(session?.posts ?? 0), label: 'posts seen' },
+                {
+                  value: String(session?.posts ?? 0),
+                  label: t('profile.subscription.postsSeen'),
+                },
                 {
                   value: String(
                     (session?.adjacent ?? 0) + (session?.discovery ?? 0),
                   ),
-                  label: 'discoveries',
+                  label: t('profile.public.discoveries'),
                 },
-                { value: String(publicScore), label: 'mix width' },
+                { value: String(publicScore), label: t('profile.public.mixWidth') },
               ].map((s) => (
                 <div
                   key={s.label}
@@ -200,14 +246,42 @@ export default function ProfileScreen({
               ))}
             </div>
             <p className="mt-4 text-xs leading-relaxed text-white/85">
-              A description, not a grade. There is no perfect mix.
+              {t('profile.public.note')}
             </p>
           </div>
         </div>
       )}
 
-      {/* ---- Your feed: the map and the lab ------------------------------ */}
+      {/* ---- Your feed: recent choices, the map and the lab -------------- */}
       <div className="mt-4 flex flex-col gap-3 px-4">
+        {/* You changed your feed — recent choices, each reversible. */}
+        {choices.length > 0 && (
+          <div className="shadow-soft-sm rounded-xl border border-hairline bg-white p-4">
+            <p className="font-display text-sm font-semibold text-ink">
+              {t('profile.recentChoices')}
+            </p>
+            <p className="text-xs text-muted">{t('profile.recentChoicesSub')}</p>
+            <div className="mt-2.5 flex flex-col">
+              {choices.map((c) => (
+                <div
+                  key={c.id}
+                  className="flex items-center justify-between border-t border-hairline py-2 first:border-t-0"
+                >
+                  <span className="text-xs font-medium text-ink">
+                    {choiceLabel(c)}
+                  </span>
+                  <button
+                    onClick={() => reverseChoice(c)}
+                    className="rounded-full border border-hairline bg-white px-2.5 py-0.5 text-[11px] font-semibold text-muted transition-transform active:scale-[0.98]"
+                  >
+                    {t('common.reverse')}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {model !== 'attention' && (
           <button
             onClick={() => setMapOpen(true)}
@@ -218,10 +292,10 @@ export default function ProfileScreen({
             </span>
             <span className="flex-1">
               <span className="block font-display text-sm font-semibold text-ink">
-                Interest map
+                {t('profile.interestMap')}
               </span>
               <span className="block text-xs text-muted">
-                What shaped your feed — and the dials to tune it
+                {t('profile.interestMapSub')}
               </span>
             </span>
             <span className="text-faint">→</span>
@@ -237,10 +311,10 @@ export default function ProfileScreen({
           </span>
           <span className="flex-1">
             <span className="block font-display text-sm font-semibold text-ink">
-              Platform model lab
+              {t('profile.lab')}
             </span>
             <span className="block text-xs text-muted">
-              Compare how each business model treated you
+              {t('profile.labSub')}
             </span>
           </span>
           <span className="text-faint">→</span>
@@ -256,21 +330,52 @@ export default function ProfileScreen({
             </span>
             <span className="flex-1">
               <span className="block font-display text-sm font-semibold text-ink">
-                Reflect on your week
+                {t('profile.reflect')}
               </span>
               <span className="block text-xs text-muted">
-                A quiet moment, just for you
+                {t('profile.reflectSub')}
               </span>
             </span>
             <span className="text-faint">→</span>
           </button>
         )}
 
+        {/* Settings → Language */}
+        <div className="shadow-soft-sm flex items-center gap-3 rounded-xl border border-hairline bg-white p-4">
+          <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-hairline bg-white text-base">
+            🌐
+          </span>
+          <span className="flex-1 font-display text-sm font-semibold text-ink">
+            {t('profile.language')}
+          </span>
+          <div className="flex gap-1.5">
+            {LANGS.map((l) => (
+              <button
+                key={l.id}
+                onClick={() => setLang(l.id)}
+                aria-pressed={lang === l.id}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition-transform active:scale-[0.98] ${
+                  lang === l.id
+                    ? 'bg-ink text-white'
+                    : 'border border-hairline bg-white text-muted'
+                }`}
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {model === 'attention' && (
           <div className="flex items-center justify-between rounded-xl bg-brand-soft px-4 py-3">
             <p className="text-xs font-semibold text-ink">
-              You liked {liked.size} posts today — your taste profile is
-              {liked.size > 3 ? ' excellent' : ' still warming up'}.
+              {t('profile.attention.taste', {
+                n: liked.size,
+                quality:
+                  liked.size > 3
+                    ? t('profile.attention.tasteGood')
+                    : t('profile.attention.tasteWarming'),
+              })}
             </p>
           </div>
         )}
@@ -278,17 +383,19 @@ export default function ProfileScreen({
 
       {/* Grid tabs — your posts vs. everything you've bookmarked. */}
       <div className="mt-6 flex border-b border-t border-hairline">
-        {(['posts', 'saved'] as const).map((t) => (
+        {(['posts', 'saved'] as const).map((tab) => (
           <button
-            key={t}
-            onClick={() => setGridTab(t)}
+            key={tab}
+            onClick={() => setGridTab(tab)}
             className={`-mb-px flex-1 border-b-2 py-2.5 text-xs font-medium transition-colors ${
-              gridTab === t
+              gridTab === tab
                 ? 'border-ink text-ink'
                 : 'border-transparent text-faint'
             }`}
           >
-            {t === 'posts' ? 'Posts' : `Saved (${savedPosts.length})`}
+            {tab === 'posts'
+              ? t('profile.tab.posts')
+              : t('profile.tab.saved', { n: savedPosts.length })}
           </button>
         ))}
       </div>
@@ -318,10 +425,10 @@ export default function ProfileScreen({
         <div className="px-6 py-10 text-center">
           <Bookmark className="mx-auto h-8 w-8 text-faint" />
           <p className="mt-2 font-display text-sm font-semibold text-ink">
-            Nothing saved yet
+            {t('profile.emptySaved.title')}
           </p>
           <p className="mt-1 text-xs text-muted">
-            Bookmark any post and it shows up here.
+            {t('profile.emptySaved.body')}
           </p>
         </div>
       )}

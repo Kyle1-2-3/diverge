@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useLocale } from '../i18n'
 import { notifications } from '../data/notifications'
+import { useInteractions } from '../state/interactions'
 import { useModel } from '../state/model'
+import { timeAgo } from '../lib/format'
 import Avatar from './Avatar'
 
 interface NotificationsSheetProps {
@@ -16,16 +18,9 @@ interface NotificationsSheetProps {
 export default function NotificationsSheet({
   onClose,
 }: NotificationsSheetProps) {
+  const { t } = useLocale()
   const { model } = useModel()
-  const [followed, setFollowed] = useState<Set<string>>(new Set())
-
-  const toggleFollow = (id: string) =>
-    setFollowed((s) => {
-      const next = new Set(s)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  const { follows, toggleFollow } = useInteractions()
 
   // Public model drops like-counts entirely — engagement isn't news.
   const items =
@@ -35,13 +30,6 @@ export default function NotificationsSheet({
   const likeCount = notifications.filter((n) => n.type === 'like').length
   const followCount = notifications.filter((n) => n.type === 'follow').length
   const commentCount = notifications.filter((n) => n.type === 'comment').length
-
-  const title =
-    model === 'attention'
-      ? 'Activity'
-      : model === 'subscription'
-        ? 'Daily digest'
-        : 'Updates'
 
   return (
     <div
@@ -54,12 +42,12 @@ export default function NotificationsSheet({
       >
         <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
           <span className="font-display text-sm font-bold tracking-[-0.01em] text-ink">
-            {title}
+            {t(`notif.${model}.title`)}
           </span>
           <button
             onClick={onClose}
             className="p-1 text-lg leading-none text-muted"
-            aria-label="Close activity"
+            aria-label={t('common.close')}
           >
             ✕
           </button>
@@ -68,28 +56,24 @@ export default function NotificationsSheet({
         {/* Model-specific framing before the list */}
         {model === 'attention' && (
           <div className="border-b border-hairline bg-brand px-4 py-2.5 text-white">
-            <p className="text-xs font-semibold">
-              🔥 3 people posted while you were away — don't fall behind
-            </p>
+            <p className="text-xs font-semibold">{t('notif.attention.banner')}</p>
           </div>
         )}
         {model === 'subscription' && (
           <div className="border-b border-hairline bg-brand-soft px-4 py-2.5">
             <p className="text-xs leading-snug text-ink">
-              Once a day, at a time you chose. Today:{' '}
-              <span className="font-semibold">
-                {likeCount} likes · {followCount} follows · {commentCount}{' '}
-                comments
-              </span>
-              . Nothing pinged you.
+              {t('notif.subscription.banner', {
+                likes: likeCount,
+                follows: followCount,
+                comments: commentCount,
+              })}
             </p>
           </div>
         )}
         {model === 'public' && (
           <div className="border-b border-hairline bg-brand-soft px-4 py-2.5">
             <p className="text-xs leading-snug text-ink">
-              We notify you about <span className="font-semibold">people</span>,
-              never numbers. Likes won't come looking for you.
+              {t('notif.public.banner')}
             </p>
           </div>
         )}
@@ -106,29 +90,31 @@ export default function NotificationsSheet({
                 )}
               </span>
               <p className="flex-1 text-sm leading-snug text-ink">
-                <span className="font-semibold">{n.handle}</span> {n.text}{' '}
-                <span className="text-[11px] text-faint">{n.timeAgo}</span>
+                <span className="font-semibold">{n.handle}</span>{' '}
+                {t(`notif.item.${n.kind}`)}
+                {n.quote ? ` “${n.quote}”` : ''}{' '}
+                <span className="text-[11px] text-faint">
+                  {timeAgo(n.timeAgo, t)}
+                </span>
               </p>
               {n.type === 'follow' && (
                 <button
-                  onClick={() => toggleFollow(n.id)}
+                  onClick={() => toggleFollow(n.handle)}
                   className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition-transform active:scale-[0.98] ${
-                    followed.has(n.id)
+                    follows.has(n.handle)
                       ? 'border border-hairline bg-white text-ink'
                       : 'bg-ink text-white'
                   }`}
                 >
-                  {followed.has(n.id) ? 'Following' : 'Follow back'}
+                  {follows.has(n.handle)
+                    ? t('common.following')
+                    : t('common.followBack')}
                 </button>
               )}
             </div>
           ))}
           <p className="px-4 pb-4 pt-2 text-center text-[11px] text-faint">
-            {model === 'attention'
-              ? 'Things move fast — check back soon'
-              : model === 'subscription'
-                ? "That's everything. See you tomorrow."
-                : 'No streaks. No red dots. Nothing to miss.'}
+            {t(`notif.${model}.footer`)}
           </p>
         </div>
       </div>

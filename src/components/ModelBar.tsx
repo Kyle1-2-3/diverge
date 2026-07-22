@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocale } from '../i18n'
 import { models, type BusinessModel } from '../data/models'
 import { useModel } from '../state/model'
 
@@ -13,6 +14,7 @@ interface ModelBarProps {
  * "the app" — kept quiet so the app itself stays in focus.
  */
 export default function ModelBar({ onSwitch }: ModelBarProps) {
+  const { t } = useLocale()
   const { model, meta } = useModel()
   const [open, setOpen] = useState(false)
 
@@ -28,11 +30,11 @@ export default function ModelBar({ onSwitch }: ModelBarProps) {
             style={{ background: meta.accent }}
           />
           <span className="truncate text-xs font-medium text-muted">
-            {meta.name}
+            {t(`model.${model}.name`)}
           </span>
         </span>
         <span className="shrink-0 text-xs font-semibold text-brand">
-          Switch
+          {t('modelBar.switch')}
         </span>
       </button>
 
@@ -46,10 +48,10 @@ export default function ModelBar({ onSwitch }: ModelBarProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-display text-xl font-bold tracking-[-0.01em] text-ink">
-              Change who pays
+              {t('modelBar.sheetTitle')}
             </h3>
             <p className="mt-1 text-[13px] leading-snug text-muted">
-              The whole app rebuilds itself around the new incentive.
+              {t('modelBar.sheetSubtitle')}
             </p>
 
             <div className="mt-4 flex flex-col gap-2.5">
@@ -74,15 +76,15 @@ export default function ModelBar({ onSwitch }: ModelBarProps) {
                     />
                     <span className="min-w-0 flex-1">
                       <span className="block font-display text-sm font-semibold">
-                        {m.name}
-                        {active && ' · running'}
+                        {t(`model.${m.id}.name`)}
+                        {active && ` ${t('modelBar.running')}`}
                       </span>
                       <span
                         className={`block truncate text-xs ${
                           active ? 'text-white/70' : 'text-muted'
                         }`}
                       >
-                        {m.kpi}
+                        {t(`model.${m.id}.kpi`)}
                       </span>
                     </span>
                   </button>
